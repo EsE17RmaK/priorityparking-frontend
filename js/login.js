@@ -1,3 +1,4 @@
+const API_URL = 'http://localhost:3000/api';
 let codigoAlumnoDetectado = '';
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -27,7 +28,7 @@ async function enviarCorreo() {
     if (!correo) return mostrarMensaje('Ingresa tu correo institucional.', 'error');
 
     try {
-        const res = await fetch('/api/auth/solicitar-otp', {
+        const res = await fetch(`${API_URL}/auth/solicitar-otp`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ correo })
@@ -51,7 +52,7 @@ async function enviarOtp() {
     if (!otp) return mostrarMensaje('Ingresa el código OTP enviado.', 'error');
 
     try {
-        const res = await fetch('/api/auth/verificar-otp', {
+        const res = await fetch(`${API_URL}/auth/verificar-otp`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 
@@ -70,7 +71,7 @@ async function enviarOtp() {
         mostrarMensaje('Acceso correcto. Redireccionando...', 'success');
         
         setTimeout(() => {
-            window.location.href = '/';
+            window.location.href = 'dashboard.html';
         }, 1500);
 
     } catch (err) {

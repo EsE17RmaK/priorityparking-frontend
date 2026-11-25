@@ -1,10 +1,10 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><%= typeof titulo !== 'undefined' ? titulo : 'PriorityParking - Acceso Administrador' %></title>
-    <link rel="stylesheet" href="/css/login.css">
+    <title>PriorityParking - Acceso Administrador</title>
+    <link rel="stylesheet" href="css/login.css">
 </head>
 <body>
 
@@ -29,14 +29,16 @@
         <div class="switch-login">
             <p>Otros accesos del sistema</p>
             <div style="display: flex; justify-content: center; align-items: center; gap: 12px; margin-top: 5px;">
-                <a href="/login" id="link-login-alumnos">&larr; Alumnos (OTP)</a>
+                <a href="login.html" id="link-login-alumnos">&larr; Alumnos (OTP)</a>
                 <span style="color: #cbd5e1;">|</span>
-                <a href="/login-garita" id="link-login-garita">Garita</a>
+                <a href="login-garita.html" id="link-login-garita">Garita</a>
             </div>
         </div>
     </div>
 
     <script>
+        const API_URL = 'http://localhost:3000/api';
+
         document.getElementById('formAdminLogin').addEventListener('submit', async (e) => {
             e.preventDefault();
             const usuario = document.getElementById('adminUsuario').value.trim();
@@ -51,8 +53,7 @@
             }
 
             try {
-                // Reutiliza la validación por API o apunta al endpoint de admin
-                const res = await fetch('/api/auth/verificar-otp', {
+                const res = await fetch(`${API_URL}/auth/verificar-otp`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ codigoAlumno: usuario, otp: password })
@@ -70,7 +71,7 @@
                 alertBox.classList.remove('hidden');
 
                 setTimeout(() => {
-                    window.location.href = '/dashboard';
+                    window.location.href = 'dashboard.html';
                 }, 1200);
 
             } catch (err) {

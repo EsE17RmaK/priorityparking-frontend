@@ -1,3 +1,5 @@
+const API_URL = 'http://localhost:3000/api';
+
 document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('btnIngresarGarita').addEventListener('click', autenticarGarita);
 });
@@ -18,7 +20,7 @@ async function autenticarGarita() {
     }
 
     try {
-        const res = await fetch('/api/auth/verificar-otp', {
+        const res = await fetch(`${API_URL}/auth/verificar-otp`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 
@@ -37,7 +39,7 @@ async function autenticarGarita() {
         mostrarMensaje('Autenticación de seguridad aprobada. Conectando monitor...', 'success');
         
         setTimeout(() => {
-            window.location.href = '/garita';
+            window.location.href = 'garita.html';
         }, 1500);
 
     } catch (err) {

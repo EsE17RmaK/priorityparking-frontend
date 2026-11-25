@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const codigoAlumno = sessionStorage.getItem('alumnoLogueado');
 
     if (!token || !codigoAlumno) {
-        window.location.href = '/login';
+        window.location.href = 'login.html';
         return;
     }
 
@@ -12,7 +12,6 @@ document.addEventListener('DOMContentLoaded', () => {
         userNameLabel.textContent = codigoAlumno;
     }
 
-    // Modal / Alerta del enlace Ver Detalle
     const linkVerDetalle = document.getElementById('linkVerDetalle');
     if (linkVerDetalle) {
         linkVerDetalle.addEventListener('click', (e) => {
@@ -21,12 +20,11 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Cerrar Sesión
     const btnLogout = document.getElementById('btnCerrarSesion');
     if (btnLogout) {
         btnLogout.addEventListener('click', () => {
             sessionStorage.clear();
-            window.location.href = '/login';
+            window.location.href = 'login.html';
         });
     }
 });

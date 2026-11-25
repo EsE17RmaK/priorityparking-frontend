@@ -1,14 +1,10 @@
-// src/public/controlador-mapa.js
+const API_URL = 'http://localhost:3000/api';
 
-// Variables de estado del alumno autenticado
 let estudianteLogueado = {
     codigo: localStorage.getItem('codigo_alumno') || sessionStorage.getItem('codigo_alumno') || null,
     autenticado: !!(localStorage.getItem('token_parking') || sessionStorage.getItem('token_parking'))
 };
 
-/**
- * PASO 1: Captura el envío del formulario de correo institucional
- */
 async function solicitarAccesoParking(event) {
     if (event) event.preventDefault();
     
@@ -24,7 +20,7 @@ async function solicitarAccesoParking(event) {
     }
 
     try {
-        const respuesta = await fetch('/api/auth/solicitar-otp', {
+        const respuesta = await fetch(`${API_URL}/auth/solicitar-otp`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ correo: inputCorreo })
@@ -60,9 +56,6 @@ async function solicitarAccesoParking(event) {
     }
 }
 
-/**
- * PASO 2: Envía los 6 dígitos del OTP para obtener acceso al plano
- */
 async function verificarCodigoOtp(event) {
     if (event) event.preventDefault();
     
@@ -70,7 +63,7 @@ async function verificarCodigoOtp(event) {
     const zonaMensajes = document.getElementById('zonaMensajesError');
 
     try {
-        const respuesta = await fetch('/api/auth/verificar-otp', {
+        const respuesta = await fetch(`${API_URL}/auth/verificar-otp`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 
@@ -89,7 +82,6 @@ async function verificarCodigoOtp(event) {
             return;
         }
 
-        // Acceso concedido: persistir token y estado
         estudianteLogueado.autenticado = true;
         localStorage.setItem('token_parking', datos.token);
         localStorage.setItem('codigo_otp', tokenDigitado);
@@ -99,7 +91,6 @@ async function verificarCodigoOtp(event) {
             zonaMensajes.innerText = datos.mensaje || 'Acceso verificado correctamente.';
         }
 
-        // Refrescar visualmente el mapa interactivo
         renderizarMapaEstacionamientos();
 
     } catch (error) {
@@ -111,15 +102,12 @@ async function verificarCodigoOtp(event) {
     }
 }
 
-/**
- * PASO 3: Consume el mapa y renderiza dinámicamente según colores
- */
 async function renderizarMapaEstacionamientos() {
     const gridContenedor = document.getElementById('gridMapa');
     const token = localStorage.getItem('token_parking');
 
     try {
-        const respuesta = await fetch('/api/garita/espacios', {
+        const respuesta = await fetch(`${API_URL}/garita/espacios`, {
             headers: {
                 ...(token ? { 'Authorization': `Bearer ${token}` } : {})
             }
@@ -139,7 +127,6 @@ async function renderizarMapaEstacionamientos() {
             cuadroHtml.className = `espacio ${slot.estado}`;
             cuadroHtml.innerHTML = `<strong>${slot.id_espacio}</strong><br><small>${slot.estado}</small>`;
             
-            // Si el cuadro está disponible, vincular directamente la confirmación de reserva
             if (slot.estado === 'DISPONIBLE') {
                 cuadroHtml.style.cursor = 'pointer';
                 cuadroHtml.onclick = () => confirmarReservaEspacio(slot.id_espacio);
@@ -155,9 +142,6 @@ async function renderizarMapaEstacionamientos() {
     }
 }
 
-/**
- * PASO 4: Confirmar la reserva del espacio y desplegar modal con código QR
- */
 async function confirmarReservaEspacio(idEspacioSeleccionado) {
     const token = localStorage.getItem('token_parking');
     const codigoAlumno = estudianteLogueado.codigo || localStorage.getItem('codigo_alumno') || 'U20304050';
@@ -169,7 +153,6 @@ async function confirmarReservaEspacio(idEspacioSeleccionado) {
     const fechaReserva = inputFecha?.value || new Date().toISOString().split('T')[0];
     const horaLlegada = inputHora?.value ? (inputHora.value.length === 5 ? `${inputHora.value}:00` : inputHora.value) : '08:30:00';
 
-    // Parámetros alineados estrictamente con lo que espera crearReservaAlumno
     const payload = {
         codigo_alumno: codigoAlumno,
         id_espacio: idEspacioSeleccionado,
@@ -179,7 +162,7 @@ async function confirmarReservaEspacio(idEspacioSeleccionado) {
     };
 
     try {
-        const respuesta = await fetch('/api/reservas/crear', {
+        const respuesta = await fetch(`${API_URL}/reservas/crear`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -191,21 +174,17 @@ async function confirmarReservaEspacio(idEspacioSeleccionado) {
         const data = await respuesta.json();
 
         if (respuesta.ok && data.qrCode) {
-            // 1. Inyectar imagen Base64 del QR
             const imgElement = document.getElementById('qr-reserva-img');
             if (imgElement) imgElement.src = data.qrCode;
 
-            // 2. Poblar metadatos en el modal
             const txtPlaza = document.getElementById('qr-plaza-id');
             const txtFecha = document.getElementById('qr-fecha');
             if (txtPlaza) txtPlaza.textContent = idEspacioSeleccionado;
             if (txtFecha) txtFecha.textContent = fechaReserva;
 
-            // 3. Mostrar modal
             const modal = document.getElementById('modal-confirmacion-qr');
             if (modal) modal.style.display = 'flex';
 
-            // 4. Refrescar mapa para reflejar el slot como RESERVADO
             renderizarMapaEstacionamientos();
         } else {
             alert(`Error al reservar: ${data.error || data.mensaje || 'No se pudo completar la operación'}`);
@@ -216,13 +195,11 @@ async function confirmarReservaEspacio(idEspacioSeleccionado) {
     }
 }
 
-// Cierre del modal con botón
 document.getElementById('btn-cerrar-qr')?.addEventListener('click', () => {
     const modal = document.getElementById('modal-confirmacion-qr');
     if (modal) modal.style.display = 'none';
 });
 
-// Cargar mapa automáticamente al entrar a la vista
 document.addEventListener('DOMContentLoaded', () => {
     renderizarMapaEstacionamientos();
 });

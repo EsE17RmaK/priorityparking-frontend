@@ -1,15 +1,15 @@
+const API_URL = 'http://localhost:3000/api';
+
 document.addEventListener('DOMContentLoaded', () => {
-    // Verificación de credenciales de sesión en cliente
     const operador = sessionStorage.getItem('operadorLogueado');
     const rol = sessionStorage.getItem('rolUsuario');
 
     if (!operador || rol !== 'GARITA') {
         alert('Acceso restringido. Solo personal de seguridad autorizado.');
-        window.location.href = '/login-garita';
+        window.location.href = 'login-garita.html';
         return;
     }
 
-    // Enlazar eventos de botones
     document.getElementById('btnRegistrarIngreso').addEventListener('click', registrarIngreso);
     document.getElementById('btnRefrescarMonitor').addEventListener('click', cargarMapaMonitoreo);
     
@@ -18,7 +18,6 @@ document.addEventListener('DOMContentLoaded', () => {
         btnLogout.addEventListener('click', cerrarSesion);
     }
 
-    // Carga inicial
     cargarMapaMonitoreo();
 });
 
@@ -26,7 +25,7 @@ function cerrarSesion() {
     sessionStorage.removeItem('operadorLogueado');
     sessionStorage.removeItem('tokenSession');
     sessionStorage.removeItem('rolUsuario');
-    window.location.href = '/login-garita';
+    window.location.href = 'login-garita.html';
 }
 
 function mostrarAlerta(mensaje, tipo) {
@@ -37,7 +36,6 @@ function mostrarAlerta(mensaje, tipo) {
     setTimeout(() => el.classList.add('hidden'), 5000);
 }
 
-// 1. Obtener y renderizar estado de espacios
 async function cargarMapaMonitoreo() {
     const container = document.getElementById('monitorMapa');
     container.innerHTML = '<p class="status-loading">Consultando base de datos...</p>';
@@ -45,7 +43,7 @@ async function cargarMapaMonitoreo() {
     const tokenJWT = sessionStorage.getItem('tokenSession'); 
 
     try {
-        const res = await fetch('/api/garita/espacios', {
+        const res = await fetch(`${API_URL}/garita/espacios`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -90,7 +88,6 @@ async function cargarMapaMonitoreo() {
     }
 }
 
-// 2. Registrar ingreso de vehículo
 async function registrarIngreso() {
     const codigoInput = document.getElementById('codigo_alumno');
     const espacioInput = document.getElementById('id_espacio');
@@ -105,7 +102,7 @@ async function registrarIngreso() {
     }
 
     try {
-        const res = await fetch('/api/garita/registrar-ingreso', {
+        const res = await fetch(`${API_URL}/garita/registrar-ingreso`, {
             method: 'POST',
             headers: { 
                 'Content-Type': 'application/json',
@@ -126,13 +123,12 @@ async function registrarIngreso() {
     }
 }
 
-// 3. Registrar salida física
 async function registrarSalida(idEspacio) {
     if (!confirm(`¿Confirmas la salida del vehículo del slot ${idEspacio}?`)) return;
     const tokenJWT = sessionStorage.getItem('tokenSession'); 
 
     try {
-        const res = await fetch('/api/garita/registrar-salida', {
+        const res = await fetch(`${API_URL}/garita/registrar-salida`, {
             method: 'POST',
             headers: { 
                 'Content-Type': 'application/json',

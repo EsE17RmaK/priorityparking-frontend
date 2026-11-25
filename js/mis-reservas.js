@@ -1,9 +1,11 @@
+const API_URL = 'http://localhost:3000/api';
+
 document.addEventListener('DOMContentLoaded', async () => {
     const token = sessionStorage.getItem('tokenSession');
     const codigoAlumno = sessionStorage.getItem('alumnoLogueado');
 
     if (!token || !codigoAlumno) {
-        window.location.href = '/login';
+        window.location.href = 'login.html';
         return;
     }
 
@@ -20,7 +22,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const tabAnteriores = document.getElementById('tabAnteriores');
 
     try {
-        const res = await fetch(`/api/reservas/mis-reservas?codigoAlumno=${codigoAlumno}`, {
+        const res = await fetch(`${API_URL}/reservas/mis-reservas?codigoAlumno=${codigoAlumno}`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
         if (res.ok) {
@@ -30,7 +32,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             container.innerHTML = '<p style="text-align:center;color:#64748b;padding:2rem;">No se pudieron cargar las reservas.</p>';
         }
     } catch (e) {
-        container.innerHTML = '<p style="text-align:center;color:red;padding:2rem;">Error al comunicarse con la base de datos.</p>';
+        container.innerHTML = '<p style="text-align:center;color:red;padding:2rem;">Error al comunicarse con el servidor.</p>';
     }
 
     tabProximas.addEventListener('click', () => {
@@ -87,7 +89,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.cancelar = async (fecha) => {
         if (!confirm(`¿Deseas cancelar la reserva del ${fecha}?`)) return;
         try {
-            const res = await fetch('/api/reservas/cancelar', {
+            const res = await fetch(`${API_URL}/reservas/cancelar`, {
                 method: 'POST',
                 headers: { 
                     'Content-Type': 'application/json', 
@@ -110,7 +112,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (btnLogout) {
         btnLogout.addEventListener('click', () => {
             sessionStorage.clear();
-            window.location.href = '/login';
+            window.location.href = 'login.html';
         });
     }
 });
