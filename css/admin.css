@@ -178,7 +178,7 @@ body {
     margin-bottom: 0.4rem;
 }
 
-input[type="text"], input[type="password"], input[type="file"] {
+input[type="text"], input[type="password"], input[type="file"], input[type="month"], input[type="number"] {
     width: 100%;
     padding: 0.65rem 0.85rem;
     border: 1px solid #cbd5e1;
@@ -335,3 +335,76 @@ th {
         grid-template-columns: 1fr;
     }
 }
+
+.sidebar-group {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: #94a3b8;
+    padding: 0.75rem 1.25rem 0.35rem;
+}
+
+.section-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.25rem;
+}
+
+.aforo-porcentaje-pill {
+    background: #eff6ff;
+    color: #1d4ed8;
+    border: 1px solid #bfdbfe;
+    padding: 0.4rem 0.85rem;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 0.85rem;
+}
+
+.aforo-bar-container {
+    display: flex;
+    width: 100%;
+    height: 32px;
+    background: #e2e8f0;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 1rem;
+    border: 1px solid #cbd5e1;
+}
+
+.aforo-segment {
+    height: 100%;
+    transition: width 0.4s ease;
+}
+
+.seg-ocupados { background-color: #dc2626; }
+.seg-reservados { background-color: #f59e0b; }
+.seg-bloqueados { background-color: #64748b; }
+.seg-disponibles { background-color: #16a34a; }
+
+.aforo-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.25rem;
+    font-size: 0.88rem;
+    color: #334155;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+}
+
+.dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+    display: inline-block;
+}
+
+.badge-blue { background: #dbeafe; color: #1e40af; }
+.badge-amber { background: #fef3c7; color: #92400e; }
+.badge-gray { background: #f1f5f9; color: #475569; }

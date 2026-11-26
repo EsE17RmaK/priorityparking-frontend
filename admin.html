@@ -18,20 +18,105 @@
 
     <div class="layout-container">
         <aside class="sidebar">
+            <div class="sidebar-group">GESTIÓN</div>
             <nav>
-                <a href="#seccion-padron" class="nav-item active" data-tab="seccion-padron">Padrón CSV</a>
+                <a href="#seccion-dashboard" class="nav-item active" data-tab="seccion-dashboard">Dashboard (Aforo)</a>
+                <a href="#seccion-padron" class="nav-item" data-tab="seccion-padron">Padrón CSV</a>
                 <a href="#seccion-garitas" class="nav-item" data-tab="seccion-garitas">Cuentas Garita</a>
             </nav>
         </aside>
 
         <main class="main-content">
-            <h1 class="welcome-title">Gestión del Sistema</h1>
+            <h1 class="welcome-title" id="tituloVistaAdmin">Panel General de Aforo y Capacidad</h1>
 
-            <!-- SECCIÓN 1: CARGA MASIVA CSV -->
-            <section id="seccion-padron" class="admin-section">
+            <!-- SECCIÓN 1 (INICIAL POR DEFECTO): DASHBOARD DE AFORO POR CANTIDAD -->
+            <section id="seccion-dashboard" class="admin-section">
+                <div class="cards-grid">
+                    <div class="card">
+                        <span class="card-label">Aforo Mensual Configurado</span>
+                        <div class="card-metric" id="kpiCapacidadMensual">--</div>
+                        <span class="card-badge badge-blue" id="kpiMesVigente">Mes vigente</span>
+                    </div>
+                    <div class="card">
+                        <span class="card-label">Ocupados en Planta</span>
+                        <div class="card-metric" id="kpiOcupados">--</div>
+                        <span class="card-badge badge-red">Vehículos dentro</span>
+                    </div>
+                    <div class="card">
+                        <span class="card-label">Reservas Esperadas Hoy</span>
+                        <div class="card-metric" id="kpiReservasHoy">--</div>
+                        <span class="card-badge badge-amber">Pendientes de ingreso</span>
+                    </div>
+                    <div class="card">
+                        <span class="card-label">Bloqueados por Garita Hoy</span>
+                        <div class="card-metric" id="kpiBloqueadosHoy">--</div>
+                        <span class="card-badge badge-gray" id="kpiMotivoBloqueo">Sin bloqueos</span>
+                    </div>
+                    <div class="card">
+                        <span class="card-label">Disponibles Reales Hoy</span>
+                        <div class="card-metric" id="kpiDisponiblesHoy">--</div>
+                        <span class="card-badge badge-green">Cupos libres</span>
+                    </div>
+                    <div class="card">
+                        <span class="card-label">Estudiantes Aptos</span>
+                        <div class="card-metric" id="kpiEstudiantesAptos">--</div>
+                        <span class="card-badge badge-blue">Padrón activo</span>
+                    </div>
+                </div>
+
+                <!-- GRÁFICO VISUAL DE AFORO POR CANTIDAD -->
+                <div class="section-card">
+                    <div class="section-header-row">
+                        <div>
+                            <h2 class="section-title">Distribución del Aforo del Día</h2>
+                            <p class="section-desc" id="subtituloAforoFecha">Proporción de ocupación y reservas respecto al límite mensual.</p>
+                        </div>
+                        <div class="aforo-porcentaje-pill" id="pillPorcentajeUso">0% comprometido</div>
+                    </div>
+
+                    <div class="aforo-bar-container" role="img" aria-label="Gráfico de distribución de aforo diario">
+                        <div class="aforo-segment seg-ocupados" id="barOcupados" style="width: 0%" title="Ocupados en planta"></div>
+                        <div class="aforo-segment seg-reservados" id="barReservados" style="width: 0%" title="Reservas esperadas hoy"></div>
+                        <div class="aforo-segment seg-bloqueados" id="barBloqueados" style="width: 0%" title="Bloqueados por Garita"></div>
+                        <div class="aforo-segment seg-disponibles" id="barDisponibles" style="width: 100%" title="Disponibles reales"></div>
+                    </div>
+
+                    <div class="aforo-legend">
+                        <div class="legend-item"><span class="dot seg-ocupados"></span> Ocupados ahora (<strong id="legOcupados">0</strong>)</div>
+                        <div class="legend-item"><span class="dot seg-reservados"></span> Reservas esperadas hoy (<strong id="legReservados">0</strong>)</div>
+                        <div class="legend-item"><span class="dot seg-bloqueados"></span> Bloqueados Garita (<strong id="legBloqueados">0</strong>)</div>
+                        <div class="legend-item"><span class="dot seg-disponibles"></span> Disponibles (<strong id="legDisponibles">0</strong>)</div>
+                    </div>
+                </div>
+
+                <!-- CONFIGURACIÓN DE AFORO MENSUAL POR EL ADMINISTRADOR -->
+                <div class="section-card">
+                    <h2 class="section-title">Configurar Capacidad de Aforo Mensual</h2>
+                    <p class="section-desc">Define el número total de espacios habilitados para el mes en curso. Las variaciones diarias por contingencia las gestiona Garita.</p>
+
+                    <div id="alertaAforo" class="alert hidden"></div>
+
+                    <form id="formConfigurarAforo" class="form-grid">
+                        <div class="form-group">
+                            <label for="inputMesAforo">Mes / Periodo</label>
+                            <input type="month" id="inputMesAforo" name="mesAnio" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="inputCapacidadMensual">Capacidad Total de Espacios</label>
+                            <input type="number" id="inputCapacidadMensual" name="capacidadMensual" min="1" max="1000" placeholder="Ej: 70" required>
+                        </div>
+                        <div class="form-group form-action">
+                            <button type="submit" id="btnGuardarAforo" class="btn-primary">Actualizar Aforo Mensual</button>
+                        </div>
+                    </form>
+                </div>
+            </section>
+
+            <!-- SECCIÓN 2: CARGA MASIVA CSV -->
+            <section id="seccion-padron" class="admin-section hidden">
                 <div class="section-card">
                     <h2 class="section-title">Carga Masiva de Padrón Estudiantil (.CSV)</h2>
-                    <p class="section-desc">Sube el padrón académico para habilitar alumnos activos al día y calcular su prioridad de mérito.</p>
+                    <p class="section-desc">Sube el padrón académico del mes para habilitar alumnos activos al día y calcular su prioridad de mérito.</p>
 
                     <div id="alertaCsv" class="alert hidden"></div>
 
@@ -71,7 +156,7 @@
                 </div>
             </section>
 
-            <!-- SECCIÓN 2: GESTIÓN DE CUENTAS DE GARITA -->
+            <!-- SECCIÓN 3: GESTIÓN DE CUENTAS DE GARITA -->
             <section id="seccion-garitas" class="admin-section hidden">
                 <div class="section-card">
                     <h2 class="section-title">Registrar Nuevo Operador de Garita</h2>
