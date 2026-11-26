@@ -15,31 +15,63 @@
 
         <div id="globalAlert" class="alert hidden"></div>
 
-        <div class="grid-layout">
-            <div>
-                <h3>📥 Registrar Ingreso Físico</h3>
-                <div class="form-group">
-                    <label for="codigo_alumno">Código de Alumno</label>
-                    <input type="text" id="codigo_alumno" placeholder="Ej: U20304050">
-                </div>
-                <div class="form-group">
-                    <label for="id_espacio">ID de Espacio (Slot)</label>
-                    <input type="text" id="id_espacio" placeholder="Ej: LC-P1-01">
-                </div>
-                <button id="btnRegistrarIngreso" type="button">Validar e Ingresar</button>
+        <!-- RESUMEN DE AFORO EN TIEMPO REAL -->
+        <div class="kpi-row">
+            <div class="kpi-box">
+                <span class="kpi-title">Aforo Mensual</span>
+                <strong class="kpi-val" id="garitaCapacidad">--</strong>
             </div>
-
-            <div>
-                <h3>📊 Resumen de Planta</h3>
-                <p>Usa este panel para autorizar la entrada de vehículos con reserva activa o liberar los espacios manualmente cuando se retiren del campus.</p>
-                <button id="btnRefrescarMonitor" type="button" class="btn-secondary">🔄 Refrescar Monitor</button>
+            <div class="kpi-box kpi-red">
+                <span class="kpi-title">Ocupados Planta</span>
+                <strong class="kpi-val" id="garitaOcupados">--</strong>
+            </div>
+            <div class="kpi-box kpi-amber">
+                <span class="kpi-title">Esperados Hoy</span>
+                <strong class="kpi-val" id="garitaEsperados">--</strong>
+            </div>
+            <div class="kpi-box kpi-gray">
+                <span class="kpi-title">Bloqueados Hoy</span>
+                <strong class="kpi-val" id="garitaBloqueados">--</strong>
+            </div>
+            <div class="kpi-box kpi-green">
+                <span class="kpi-title">Disponibles Hoy</span>
+                <strong class="kpi-val" id="garitaDisponibles">--</strong>
             </div>
         </div>
 
-        <h3>🗺️ Monitor de Estacionamientos en Tiempo Real</h3>
-        <div id="monitorMapa" class="map-grid"></div>
+        <div class="grid-layout">
+            <!-- PANEL 1: INGRESO VEHICULAR SIN SLOT -->
+            <div class="panel-box">
+                <h3>📥 Validar Ingreso Vehicular</h3>
+                <div class="form-group">
+                    <label for="codigo_alumno">Código de Alumno (o lectura QR)</label>
+                    <input type="text" id="codigo_alumno" placeholder="Ej: U20304050">
+                </div>
+                <button id="btnRegistrarIngreso" type="button">Validar e Ingresar (+1 Ocupado)</button>
+            </div>
+
+            <!-- PANEL 2: BLOQUEO OPERATIVO DIARIO POR CONTINGENCIA -->
+            <div class="panel-box">
+                <h3>🚧 Bloqueo Operativo del Día</h3>
+                <div class="form-group">
+                    <label for="cupos_bloqueados">Cantidad de lugares a bloquear hoy</label>
+                    <input type="number" id="cupos_bloqueados" min="0" max="500" placeholder="Ej: 10">
+                </div>
+                <div class="form-group">
+                    <label for="motivo_bloqueo">Motivo (mantenimiento, evento, etc.)</label>
+                    <input type="text" id="motivo_bloqueo" placeholder="Ej: Evento institucional en patio">
+                </div>
+                <button id="btnGuardarBloqueo" type="button" class="btn-warning">Aplicar Bloqueo Diario</button>
+            </div>
+        </div>
+
+        <div class="monitor-header">
+            <h3>📋 Vehículos en Planta y Reservas de Hoy</h3>
+            <button id="btnRefrescarMonitor" type="button" class="btn-secondary btn-sm">🔄 Refrescar</button>
+        </div>
+        <div id="monitorLista" class="lista-operativa"></div>
     </div>
 
-    <script src="js/garita.js"></script>
+    <script src="js/garita.js?v=2"></script>
 </body>
 </html>
