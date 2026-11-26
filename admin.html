@@ -103,7 +103,7 @@
                         </div>
                         <div class="form-group">
                             <label for="inputCapacidadMensual">Capacidad Total de Espacios</label>
-                            <input type="number" id="inputCapacidadMensual" name="capacidadMensual" min="1" max="1000" placeholder="Ej: 70" required>
+                            <input type="number" id="inputCapacidadMensual" name="capacidadMensual" min="1" max="1000" required>
                         </div>
                         <div class="form-group form-action">
                             <button type="submit" id="btnGuardarAforo" class="btn-primary">Actualizar Aforo Mensual</button>
@@ -164,21 +164,42 @@
 
                     <div id="alertaGarita" class="alert hidden"></div>
 
-                    <form id="formCrearGarita" class="form-grid">
+                    <form id="formCrearGarita" class="form-grid" novalidate>
                         <div class="form-group">
                             <label for="garitaNombre">Nombre Completo</label>
-                            <input type="text" id="garitaNombre" name="nombreCompleto" placeholder="Ej: Carlos Mendoza" required>
+                            <input type="text" id="garitaNombre" name="nombreCompleto" required>
                         </div>
+
                         <div class="form-group">
                             <label for="garitaUsername">Usuario</label>
-                            <input type="text" id="garitaUsername" name="username" placeholder="Ej: GARITA_02" required>
+                            <input type="text" id="garitaUsername" name="username" required>
+                            <small id="hintUsuarioGarita" class="hint-estado">Mínimo 4 caracteres (letras, números o guiones).</small>
                         </div>
-                        <div class="form-group">
-                            <label for="garitaPassword">Contraseña</label>
-                            <input type="password" id="garitaPassword" name="password" placeholder="Mínimo 6 caracteres" minlength="6" required>
+
+                        <div class="form-group form-full">
+                            <label for="garitaPassword">Contraseña Segura</label>
+                            <div class="password-wrapper">
+                                <input type="password" id="garitaPassword" name="password" placeholder="••••••••" required>
+                                <button type="button" id="btnToggleGaritaPass" class="btn-eye" title="Mostrar u ocultar contraseña">👁️</button>
+                            </div>
+
+                            <div class="medidor-box">
+                                <div class="barra-fuerza-bg"><div id="barraFuerzaGarita" class="barra-fuerza-fill"></div></div>
+                                <span id="textoFuerzaGarita" class="texto-fuerza">Nivel de seguridad: Sin ingresar</span>
+                            </div>
+
+                            <ul class="checklist-pass">
+                                <li id="chkLen" class="invalido">✖ Mínimo 8 caracteres</li>
+                                <li id="chkMayus" class="invalido">✖ Al menos 1 letra mayúscula (A-Z)</li>
+                                <li id="chkMinus" class="invalido">✖ Al menos 1 letra minúscula (a-z)</li>
+                                <li id="chkNum" class="invalido">✖ Al menos 1 número (0-9)</li>
+                                <li id="chkSimb" class="invalido">✖ Al menos 1 símbolo (@, #, $, *, !, etc.)</li>
+                                <li id="chkPersonal" class="invalido">✖ No contiene usuario ni nombre</li>
+                            </ul>
                         </div>
-                        <div class="form-group form-action">
-                            <button type="submit" id="btnCrearGarita" class="btn-primary">Registrar Operador</button>
+
+                        <div class="form-group form-full">
+                            <button type="submit" id="btnCrearGarita" class="btn-primary" disabled>Registrar Operador</button>
                         </div>
                     </form>
                 </div>

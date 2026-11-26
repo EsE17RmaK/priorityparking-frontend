@@ -45,7 +45,7 @@
                 <h3>📥 Validar Ingreso Vehicular</h3>
                 <div class="form-group">
                     <label for="codigo_alumno">Código de Alumno (o lectura QR)</label>
-                    <input type="text" id="codigo_alumno" placeholder="Ej: U20304050">
+                    <input type="text" id="codigo_alumno">
                 </div>
                 <button id="btnRegistrarIngreso" type="button">Validar e Ingresar (+1 Ocupado)</button>
             </div>
@@ -55,11 +55,11 @@
                 <h3>🚧 Bloqueo Operativo del Día</h3>
                 <div class="form-group">
                     <label for="cupos_bloqueados">Cantidad de lugares a bloquear hoy</label>
-                    <input type="number" id="cupos_bloqueados" min="0" max="500" placeholder="Ej: 10">
+                    <input type="number" id="cupos_bloqueados" min="0" max="500">
                 </div>
                 <div class="form-group">
                     <label for="motivo_bloqueo">Motivo (mantenimiento, evento, etc.)</label>
-                    <input type="text" id="motivo_bloqueo" placeholder="Ej: Evento institucional en patio">
+                    <input type="text" id="motivo_bloqueo">
                 </div>
                 <button id="btnGuardarBloqueo" type="button" class="btn-warning">Aplicar Bloqueo Diario</button>
             </div>
