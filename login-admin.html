@@ -36,50 +36,6 @@
         </div>
     </div>
 
-    <script>
-        const API_URL = 'http://localhost:3000/api';
-
-        document.getElementById('formAdminLogin').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const usuario = document.getElementById('adminUsuario').value.trim();
-            const password = document.getElementById('adminPassword').value.trim();
-            const alertBox = document.getElementById('alertBox');
-
-            if (!usuario || !password) {
-                alertBox.innerText = 'Por favor, ingrese todas las credenciales.';
-                alertBox.className = 'alert error';
-                alertBox.classList.remove('hidden');
-                return;
-            }
-
-            try {
-                const res = await fetch(`${API_URL}/auth/verificar-otp`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ codigoAlumno: usuario, otp: password })
-                });
-                const data = await res.json();
-
-                if (!res.ok) throw new Error(data.error || 'Credenciales administrativas inválidas.');
-
-                sessionStorage.setItem('operadorLogueado', usuario);
-                sessionStorage.setItem('tokenSession', data.token);
-                sessionStorage.setItem('rolUsuario', 'ADMIN');
-
-                alertBox.innerText = 'Autenticación exitosa. Redirigiendo...';
-                alertBox.className = 'alert success';
-                alertBox.classList.remove('hidden');
-
-                setTimeout(() => {
-                    window.location.href = 'dashboard.html';
-                }, 1200);
-
-            } catch (err) {
-                alertBox.innerText = err.message;
-                alertBox.className = 'alert error';
-                alertBox.classList.remove('hidden');
-            }
-        });
-    </script>
+    <script src="js/login-admin.js"></script>
 </body>
 </html>
