@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Administrador - ParkingU</title>
+    <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+    <header class="top-nav">
+        <div class="logo">ParkingU <span class="badge-role">ADMIN</span></div>
+        <div class="user-profile">
+            <span class="avatar" id="avatarAdmin">AD</span>
+            <span class="user-name" id="adminNameLabel">Administrador</span>
+            <button id="btnCerrarSesion" class="btn-logout">Salir</button>
+        </div>
+    </header>
+
+    <div class="layout-container">
+        <aside class="sidebar">
+            <nav>
+                <a href="#seccion-padron" class="nav-item active" data-tab="seccion-padron">Padrón CSV</a>
+                <a href="#seccion-garitas" class="nav-item" data-tab="seccion-garitas">Cuentas Garita</a>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <h1 class="welcome-title">Gestión del Sistema</h1>
+
+            <!-- SECCIÓN 1: CARGA MASIVA CSV -->
+            <section id="seccion-padron" class="admin-section">
+                <div class="section-card">
+                    <h2 class="section-title">Carga Masiva de Padrón Estudiantil (.CSV)</h2>
+                    <p class="section-desc">Sube el padrón académico para habilitar alumnos activos al día y calcular su prioridad de mérito.</p>
+
+                    <div id="alertaCsv" class="alert hidden"></div>
+
+                    <form id="formCargaCsv" class="form-row">
+                        <input type="file" id="inputCsvPadron" name="archivoCsv" accept=".csv" required>
+                        <button type="submit" id="btnSubirCsv" class="btn-primary">Procesar Padrón</button>
+                    </form>
+                </div>
+
+                <div id="resumenCargaCsv" class="cards-grid hidden">
+                    <div class="card">
+                        <span class="card-label">Total Procesados</span>
+                        <div class="card-metric" id="statProcesados">0</div>
+                    </div>
+                    <div class="card">
+                        <span class="card-label">Aptos Habilitados</span>
+                        <div class="card-metric" id="statAptos">0</div>
+                        <span class="card-badge badge-green">Activos al día</span>
+                    </div>
+                    <div class="card">
+                        <span class="card-label">No Aptos (Deuda/Inactivo)</span>
+                        <div class="card-metric" id="statNoAptos">0</div>
+                        <span class="card-badge badge-red">Bloqueados</span>
+                    </div>
+                    <div class="card">
+                        <span class="card-label">Quinto Superior (Alta)</span>
+                        <div class="card-metric" id="statQuinto">0</div>
+                    </div>
+                    <div class="card">
+                        <span class="card-label">Tercio Superior (Media)</span>
+                        <div class="card-metric" id="statTercio">0</div>
+                    </div>
+                    <div class="card">
+                        <span class="card-label">Prioridad Estándar</span>
+                        <div class="card-metric" id="statEstandar">0</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECCIÓN 2: GESTIÓN DE CUENTAS DE GARITA -->
+            <section id="seccion-garitas" class="admin-section hidden">
+                <div class="section-card">
+                    <h2 class="section-title">Registrar Nuevo Operador de Garita</h2>
+                    <p class="section-desc">Crea credenciales de acceso para el personal de vigilancia en puerta.</p>
+
+                    <div id="alertaGarita" class="alert hidden"></div>
+
+                    <form id="formCrearGarita" class="form-grid">
+                        <div class="form-group">
+                            <label for="garitaNombre">Nombre Completo</label>
+                            <input type="text" id="garitaNombre" name="nombreCompleto" placeholder="Ej: Carlos Mendoza" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="garitaUsername">Usuario</label>
+                            <input type="text" id="garitaUsername" name="username" placeholder="Ej: GARITA_02" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="garitaPassword">Contraseña</label>
+                            <input type="password" id="garitaPassword" name="password" placeholder="Mínimo 6 caracteres" minlength="6" required>
+                        </div>
+                        <div class="form-group form-action">
+                            <button type="submit" id="btnCrearGarita" class="btn-primary">Registrar Operador</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="section-card">
+                    <h2 class="section-title">Operadores de Garita Activos</h2>
+                    <div class="table-wrapper">
+                        <table id="tablaOperadoresGarita">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Usuario</th>
+                                    <th>Nombre Completo</th>
+                                    <th>Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbodyGaritas">
+                                <tr><td colspan="4">Cargando operadores...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="js/admin.js"></script>
+</body>
+</html>
