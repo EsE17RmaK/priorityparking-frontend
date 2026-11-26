@@ -1,21 +1,21 @@
+const API_URL = 'http://localhost:3000/api';
+
 document.addEventListener('DOMContentLoaded', async () => {
     const token = sessionStorage.getItem('tokenSession');
     const codigoAlumno = sessionStorage.getItem('alumnoLogueado');
 
     if (!token) {
-        window.location.href = '/login';
+        window.location.href = 'login.html';
         return;
     }
 
-    // Actualizar nombre/código en la interfaz
     if (codigoAlumno) {
         document.getElementById('userNameLabel').textContent = codigoAlumno;
         document.getElementById('nombreCorto').textContent = codigoAlumno;
     }
 
-    // Consultar disponibilidad de espacios en tiempo real
     try {
-        const res = await fetch('/api/garita/espacios', {
+        const res = await fetch(`${API_URL}/garita/espacios`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
         if (res.ok) {
@@ -24,12 +24,15 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.getElementById('metricEspacios').textContent = disponibles;
         }
     } catch (err) {
-        console.error("No se pudo cargar la métrica de espacios:", err);
+        console.error('No se pudo cargar la métrica de espacios:', err);
     }
 
-    // Botón de Cerrar Sesión
+    document.getElementById('btnHistorial')?.addEventListener('click', () => {
+        window.location.href = 'historial.html';
+    });
+
     document.getElementById('btnCerrarSesion').addEventListener('click', () => {
         sessionStorage.clear();
-        window.location.href = '/login';
+        window.location.href = 'login.html';
     });
 });

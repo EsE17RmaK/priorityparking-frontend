@@ -1,9 +1,11 @@
+const API_URL = 'http://localhost:3000/api';
+
 document.addEventListener('DOMContentLoaded', async () => {
     const token = sessionStorage.getItem('tokenSession');
     const codigoAlumno = sessionStorage.getItem('alumnoLogueado');
 
     if (!token || !codigoAlumno) {
-        window.location.href = '/login';
+        window.location.href = 'login.html';
         return;
     }
 
@@ -19,15 +21,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     const botonesFiltro = document.querySelectorAll('.btn-filtro');
 
     try {
-        // Obtenemos las reservas del alumno
-        const res = await fetch(`/api/reservas/mis-reservas?codigoAlumno=${codigoAlumno}`, {
+        const res = await fetch(`${API_URL}/reservas/mis-reservas?codigoAlumno=${codigoAlumno}`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
 
         if (res.ok) {
             const reservas = await res.json();
             
-            // Mapeamos los datos al formato de la tabla del Mockup E08
             historialCompleto = reservas.map(r => {
                 let tipo = 'Reserva';
                 let estadoTexto = 'Confirmada';
@@ -64,10 +64,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             tbody.innerHTML = '<tr><td colspan="4" class="empty-state">No se pudo cargar el historial.</td></tr>';
         }
     } catch (e) {
-        tbody.innerHTML = '<tr><td colspan="4" class="empty-state" style="color:red;">Error de conexión con la base de datos.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="4" class="empty-state" style="color:red;">Error de conexión con el servidor.</td></tr>';
     }
 
-    // Configurar botones de filtro
     botonesFiltro.forEach(btn => {
         btn.addEventListener('click', () => {
             botonesFiltro.forEach(b => b.classList.remove('active'));
@@ -101,12 +100,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         `).join('');
     }
 
-    // Botón Salir
     const btnLogout = document.getElementById('btnCerrarSesion');
     if (btnLogout) {
         btnLogout.addEventListener('click', () => {
             sessionStorage.clear();
-            window.location.href = '/login';
+            window.location.href = 'login.html';
         });
     }
 });

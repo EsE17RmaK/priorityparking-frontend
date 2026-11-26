@@ -1,15 +1,15 @@
+const API_URL = 'http://localhost:3000/api';
 let codigoAlumno = '';
 
 document.addEventListener('DOMContentLoaded', () => {
     codigoAlumno = sessionStorage.getItem('alumnoLogueado');
     if (!codigoAlumno) {
-        window.location.href = '/login';
+        window.location.href = 'login.html';
         return;
     }
 
     document.getElementById('displayCodigo').innerText = codigoAlumno;
     
-    // Asignación de listeners
     document.getElementById('btnLogout').addEventListener('click', cerrarSesion);
     document.getElementById('btnCancelarReserva').addEventListener('click', cancelarMiReserva);
     
@@ -33,13 +33,13 @@ function configurarCamposFechaHora() {
     const hoy = new Date();
     const formatoHoy = hoy.toLocaleDateString('sv-SE');
 
-    const mañana = new Date();
-    mañana.setDate(mañana.getDate() + 1);
-    const formatoMañana = mañana.toLocaleDateString('sv-SE');
+    const manana = new Date();
+    manana.setDate(manana.getDate() + 1);
+    const formatoManana = manana.toLocaleDateString('sv-SE');
 
     inputFecha.value = formatoHoy;
     inputFecha.min = formatoHoy;
-    inputFecha.max = formatoMañana;
+    inputFecha.max = formatoManana;
 
     const horas = String(hoy.getHours()).padStart(2, '0');
     const minutos = String(hoy.getMinutes()).padStart(2, '0');
@@ -53,7 +53,7 @@ function cerrarSesion() {
     sessionStorage.removeItem('alumnoLogueado');
     sessionStorage.removeItem('tokenSession');
     sessionStorage.removeItem('rolUsuario');
-    window.location.href = '/login';
+    window.location.href = 'login.html';
 }
 
 function mostrarNotificacion(texto, tipo) {
@@ -68,7 +68,7 @@ async function cargarMapaWeb() {
     const grid = document.getElementById('contenedorMapa');
     const tokenJWT = sessionStorage.getItem('tokenSession');
     try {
-        const res = await fetch('/api/garita/espacios', {
+        const res = await fetch(`${API_URL}/garita/espacios`, {
             headers: { 'Authorization': `Bearer ${tokenJWT}` }
         });
         const espacios = await res.json();
@@ -103,7 +103,7 @@ async function cancelarMiReserva() {
     }
 
     try {
-        const res = await fetch('/api/reservas/cancelar', {
+        const res = await fetch(`${API_URL}/reservas/cancelar`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -136,7 +136,7 @@ async function solicitarReservaSlot(idEspacio) {
     if (!confirm(`¿Separar el slot ${idEspacio} para hoy a las ${horaElegida}?`)) return;
 
     try {
-        const res = await fetch('/api/reservas/crear', {
+        const res = await fetch(`${API_URL}/reservas/crear`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

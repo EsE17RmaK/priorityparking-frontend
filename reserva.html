@@ -1,14 +1,14 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><%= typeof titulo !== 'undefined' ? titulo : 'PriorityParking - Panel Alumno' %></title>
-    <link rel="stylesheet" href="/css/reserva.css">
+    <title>PriorityParking - Panel Alumno</title>
+    <link rel="stylesheet" href="css/reserva.css">
 </head>
 <body>
 <div style="margin-bottom: 1rem;">
-    <a href="/dashboard" style="display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.5rem 1rem; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; text-decoration: none; color: #1e293b; font-weight: 600; font-size: 0.85rem;">
+    <a href="dashboard.html" style="display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.5rem 1rem; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; text-decoration: none; color: #1e293b; font-weight: 600; font-size: 0.85rem;">
         &larr; Volver al Dashboard
     </a>
 </div>
@@ -42,7 +42,6 @@
         <div class="map-grid" id="contenedorMapa">Cargando espacios...</div>
     </div>
 
-    <!-- Modal QR -->
     <div id="modal-confirmacion-qr" class="modal-overlay">
       <div class="modal-content">
         <h3 class="modal-header-text">¡Reserva Confirmada!</h3>
@@ -64,6 +63,6 @@
       </div>
     </div>
 
-    <script src="/js/reserva.js"></script>
+    <script src="js/reserva.js"></script>
 </body>
 </html>

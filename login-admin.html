@@ -1,0 +1,41 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PriorityParking - Acceso Administrador</title>
+    <link rel="stylesheet" href="css/login.css">
+</head>
+<body>
+
+    <div class="login-card">
+        <div class="logo-title">🛡️ Panel Admin</div>
+        <div class="subtitle">Gestión y Configuración del Sistema</div>
+        
+        <div id="alertBox" class="alert hidden"></div>
+
+        <form id="formAdminLogin">
+            <div class="form-group">
+                <label for="adminUsuario">Usuario Administrador</label>
+                <input type="text" id="adminUsuario" placeholder="Ej: admin_utp" required>
+            </div>
+            <div class="form-group">
+                <label for="adminPassword">Contraseña Maestra</label>
+                <input type="password" id="adminPassword" placeholder="••••••••" required>
+            </div>
+            <button id="btnIngresarAdmin" type="submit">Acceder al Sistema</button>
+        </form>
+
+        <div class="switch-login">
+            <p>Otros accesos del sistema</p>
+            <div style="display: flex; justify-content: center; align-items: center; gap: 12px; margin-top: 5px;">
+                <a href="login.html" id="link-login-alumnos">&larr; Alumnos (OTP)</a>
+                <span style="color: #cbd5e1;">|</span>
+                <a href="login-garita.html" id="link-login-garita">Garita</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/login-admin.js"></script>
+</body>
+</html>
