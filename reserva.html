@@ -3,66 +3,116 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PriorityParking - Panel Alumno</title>
+    <title>PriorityParking - Reserva de Estacionamiento</title>
     <link rel="stylesheet" href="css/reserva.css">
 </head>
 <body>
-<div style="margin-bottom: 1rem;">
-    <a href="dashboard.html" style="display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.5rem 1rem; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; text-decoration: none; color: #1e293b; font-weight: 600; font-size: 0.85rem;">
-        &larr; Volver al Dashboard
-    </a>
-</div>
+    <div class="top-back">
+        <a href="dashboard.html" class="btn-back">&larr; Volver al Dashboard</a>
+    </div>
+
     <div class="container">
         <div class="header">
-            <h2>🗺️ Reserva tu Espacio en Tiempo Real - Sede Lima Centro</h2>
+            <h2>🚗 Reserva de Estacionamiento</h2>
             <button id="btnLogout" class="btn-logout" type="button">Cerrar Sesión</button>
         </div>
-        
-        <p>Sesión activa: <span id="displayCodigo" class="user-session-text"></span></p>
-        
+
+        <p class="session-line">Estudiante: <span id="displayCodigo" class="user-session-text"></span></p>
+
+        <!-- SOLO 2 INDICADORES PARA EL ESTUDIANTE -->
+        <div class="aforo-card">
+            <div class="aforo-stats-two">
+                <div class="stat-item">
+                    <span class="stat-label">Ocupados / Reservados</span>
+                    <strong class="stat-num text-amber" id="resUsados">--</strong>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Disponibles</span>
+                    <strong class="stat-num text-green" id="resDisponibles">--</strong>
+                </div>
+            </div>
+        </div>
+
         <div class="control-panel">
             <div>
-                <label for="fechaLlegada" class="input-label">📅 Fecha de Reserva:</label>
-                <input type="date" id="fechaLlegada" class="input-field" readonly>
-            </div>
-            
-            <div>
-                <label for="horaLlegada" class="input-label">⏰ ¿A qué hora llegas? (20 min de tolerancia):</label>
-                <input type="time" id="horaLlegada" class="input-field">
+                <label for="fechaLlegada" class="input-label">📅 Fecha de Reserva</label>
+                <input type="date" id="fechaLlegada" class="input-field">
             </div>
 
-            <div style="text-align: right; margin-top: 5px;">
-                <button id="btnCancelarReserva" class="btn-cancel" type="button">
-                    ❌ Cancelar mi Reserva de esta Fecha
+            <div>
+                <label for="horaLlegada" class="input-label">⏰ Hora de Llegada (solo hora en punto)</label>
+                <select id="horaLlegada" class="input-field">
+                    <option value="07:00">07:00 AM</option>
+                    <option value="08:00">08:00 AM</option>
+                    <option value="09:00">09:00 AM</option>
+                    <option value="10:00">10:00 AM</option>
+                    <option value="11:00">11:00 AM</option>
+                    <option value="12:00">12:00 PM</option>
+                    <option value="13:00">01:00 PM</option>
+                    <option value="14:00">02:00 PM</option>
+                    <option value="15:00">03:00 PM</option>
+                    <option value="16:00">04:00 PM</option>
+                    <option value="17:00">05:00 PM</option>
+                    <option value="18:00">06:00 PM</option>
+                    <option value="19:00">07:00 PM</option>
+                    <option value="20:00">08:00 PM</option>
+                    <option value="21:00">09:00 PM</option>
+                </select>
+            </div>
+
+            <div class="actions-stack">
+                <button id="btnConfirmarCupo" class="btn-confirm" type="button">
+                    ✅ Reservar Cupo
+                </button>
+                <button id="btnAbrirModalCancelar" class="btn-cancel" type="button">
+                    ❌ Cancelar mi Reserva
                 </button>
             </div>
         </div>
 
         <div id="panelAlert" class="alert hidden"></div>
-        <div class="map-grid" id="contenedorMapa">Cargando espacios...</div>
     </div>
 
+    <!-- MODAL DE CONFIRMACIÓN CON QR -->
     <div id="modal-confirmacion-qr" class="modal-overlay">
-      <div class="modal-content">
-        <h3 class="modal-header-text">¡Reserva Confirmada!</h3>
-        <p>Presenta este código en garita al momento de ingresar:</p>
-        
-        <div style="margin: 15px 0;">
-          <img id="qr-reserva-img" class="qr-image" src="" alt="Código QR de Reserva" />
-        </div>
+        <div class="modal-content">
+            <h3 class="modal-header-text">¡Reserva Confirmada!</h3>
+            <p>Presenta este código QR en garita al ingresar:</p>
 
-        <div class="modal-details">
-          <p><strong>Plaza:</strong> <span id="qr-plaza-id"></span></p>
-          <p><strong>Fecha:</strong> <span id="qr-fecha"></span></p>
-          <p><strong>Estado:</strong> <span id="qr-estado" class="status-badge">PENDIENTE</span></p>
-        </div>
+            <div style="margin: 15px 0;">
+                <img id="qr-reserva-img" class="qr-image" src="" alt="Código QR de Reserva" />
+            </div>
 
-        <button id="btn-cerrar-qr" type="button" class="btn-modal-close">
-          Aceptar y Continuar
-        </button>
-      </div>
+            <div class="modal-details">
+                <p><strong>Sede:</strong> <span id="qr-plaza-id">Lima Centro</span></p>
+                <p><strong>Fecha y Hora:</strong> <span id="qr-fecha"></span></p>
+                <p><strong>Estado:</strong> <span id="qr-estado" class="status-badge">PENDIENTE</span></p>
+            </div>
+
+            <button id="btn-cerrar-qr" type="button" class="btn-modal-close">Aceptar</button>
+        </div>
     </div>
 
-    <script src="js/reserva.js"></script>
+    <!-- MODAL PROPIO DEL SITIO PARA VER DETALLE Y CANCELAR RESERVA -->
+    <div id="modal-cancelar-reserva" class="modal-overlay">
+        <div class="modal-content">
+            <h3 class="modal-header-danger">Cancelar Reserva</h3>
+            <p class="modal-sub">Revisa el detalle de tu reserva activa antes de anularla:</p>
+
+            <div id="detalle-reserva-cancelar" class="modal-details">
+                <p><strong>Código:</strong> <span id="cancel-codigo">--</span></p>
+                <p><strong>Fecha:</strong> <span id="cancel-fecha">--</span></p>
+                <p><strong>Hora de llegada:</strong> <span id="cancel-hora">--</span></p>
+                <p><strong>Estado:</strong> <span id="cancel-estado" class="status-badge">--</span></p>
+            </div>
+
+            <div class="modal-actions-row">
+                <button id="btn-volver-modal" type="button" class="btn-modal-secondary">Volver</button>
+                <button id="btn-confirmar-cancelacion" type="button" class="btn-modal-danger">Sí, Cancelar Reserva</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/reserva.js?v=3"></script>
 </body>
 </html>

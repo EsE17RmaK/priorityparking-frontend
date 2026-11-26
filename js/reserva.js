@@ -1,4 +1,7 @@
-const API_URL = 'http://localhost:3000/api';
+const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    ? 'http://localhost:3000/api'
+    : 'https://priorityparking-backend-production.up.railway.app/api';
+
 let codigoAlumno = '';
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -9,26 +12,29 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     document.getElementById('displayCodigo').innerText = codigoAlumno;
-    
+
     document.getElementById('btnLogout').addEventListener('click', cerrarSesion);
-    document.getElementById('btnCancelarReserva').addEventListener('click', cancelarMiReserva);
-    
-    const btnCerrarQr = document.getElementById('btn-cerrar-qr');
-    if (btnCerrarQr) {
-        btnCerrarQr.addEventListener('click', () => {
-            const modal = document.getElementById('modal-confirmacion-qr');
-            if (modal) modal.style.display = 'none';
-            cargarMapaWeb();
-        });
-    }
+    document.getElementById('btnConfirmarCupo').addEventListener('click', solicitarReservaCupo);
+    document.getElementById('btnAbrirModalCancelar').addEventListener('click', abrirModalCancelar);
+
+    document.getElementById('btn-cerrar-qr').addEventListener('click', () => {
+        document.getElementById('modal-confirmacion-qr').style.display = 'none';
+        cargarDisponibilidadAforo();
+    });
+
+    document.getElementById('btn-volver-modal').addEventListener('click', () => {
+        document.getElementById('modal-cancelar-reserva').style.display = 'none';
+    });
+
+    document.getElementById('btn-confirmar-cancelacion').addEventListener('click', ejecutarCancelacionConfirmada);
 
     configurarCamposFechaHora();
-    cargarMapaWeb();
+    cargarDisponibilidadAforo();
 });
 
 function configurarCamposFechaHora() {
     const inputFecha = document.getElementById('fechaLlegada');
-    const inputHora = document.getElementById('horaLlegada');
+    const selectHora = document.getElementById('horaLlegada');
 
     const hoy = new Date();
     const formatoHoy = hoy.toLocaleDateString('sv-SE');
@@ -41,12 +47,9 @@ function configurarCamposFechaHora() {
     inputFecha.min = formatoHoy;
     inputFecha.max = formatoManana;
 
-    const horas = String(hoy.getHours()).padStart(2, '0');
-    const minutos = String(hoy.getMinutes()).padStart(2, '0');
-
-    if (inputHora) {
-        inputHora.value = `${horas}:${minutos}`;
-    }
+    // Seleccionar la siguiente hora en punto por defecto dentro del rango 07:00 - 21:00
+    const siguienteHora = Math.min(21, Math.max(7, hoy.getHours() + 1));
+    selectHora.value = `${String(siguienteHora).padStart(2, '0')}:00`;
 }
 
 function cerrarSesion() {
@@ -64,43 +67,116 @@ function mostrarNotificacion(texto, tipo) {
     setTimeout(() => box.classList.add('hidden'), 5000);
 }
 
-async function cargarMapaWeb() {
-    const grid = document.getElementById('contenedorMapa');
+async function cargarDisponibilidadAforo() {
     const tokenJWT = sessionStorage.getItem('tokenSession');
+    const btnReservar = document.getElementById('btnConfirmarCupo');
+
     try {
-        const res = await fetch(`${API_URL}/garita/espacios`, {
+        const res = await fetch(`${API_URL}/admin/aforo`, {
             headers: { 'Authorization': `Bearer ${tokenJWT}` }
         });
-        const espacios = await res.json();
-        grid.innerHTML = '';
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'No se pudo consultar la disponibilidad.');
 
-        espacios.forEach(espacio => {
-            const div = document.createElement('div');
-            div.className = `slot ${espacio.estado}`;
-            div.innerHTML = `<div>${espacio.id_espacio}</div><small>${espacio.estado}</small>`;
+        const cap = data.capacidadMensual ?? 70;
+        const usados = (data.ocupadosActuales ?? 0) + (data.reservasEsperadasHoy ?? 0) + (data.bloqueadosHoy ?? 0);
+        const libres = data.disponiblesHoy ?? Math.max(0, cap - usados);
 
-            if (espacio.estado === 'DISPONIBLE') {
-                div.onclick = () => solicitarReservaSlot(espacio.id_espacio);
-            }
-            grid.appendChild(div);
-        });
+        document.getElementById('resUsados').textContent = usados;
+        document.getElementById('resDisponibles').textContent = libres;
+
+        if (libres <= 0) {
+            btnReservar.disabled = true;
+            btnReservar.textContent = '🚫 Sin Disponibilidad';
+        } else {
+            btnReservar.disabled = false;
+            btnReservar.textContent = '✅ Reservar Cupo';
+        }
     } catch (err) {
-        grid.innerHTML = '<p style="color:red;">Error de conexión.</p>';
+        mostrarNotificacion(err.message, 'error');
     }
 }
 
-async function cancelarMiReserva() {
+async function solicitarReservaCupo() {
+    const fechaElegida = document.getElementById('fechaLlegada').value;
+    const horaElegida = document.getElementById('horaLlegada').value;
+    const tokenJWT = sessionStorage.getItem('tokenSession');
+
+    if (!fechaElegida || !horaElegida) {
+        return mostrarNotificacion('Selecciona la fecha y hora de llegada.', 'error');
+    }
+
+    try {
+        const res = await fetch(`${API_URL}/reservas/crear`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${tokenJWT}`
+            },
+            body: JSON.stringify({
+                codigo_alumno: codigoAlumno,
+                otp_verificado: '000000',
+                fecha_reserva: fechaElegida,
+                hora_llegada: horaElegida
+            })
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'No se pudo procesar tu reserva.');
+
+        if (data.qrCode) {
+            document.getElementById('qr-reserva-img').src = data.qrCode;
+            document.getElementById('qr-plaza-id').textContent = 'Sede Lima Centro';
+            document.getElementById('qr-fecha').textContent = `${fechaElegida} a las ${horaElegida}`;
+            document.getElementById('modal-confirmacion-qr').style.display = 'flex';
+        }
+
+        mostrarNotificacion(data.mensaje, 'success');
+        await cargarDisponibilidadAforo();
+    } catch (err) {
+        mostrarNotificacion(err.message, 'error');
+    }
+}
+
+async function abrirModalCancelar() {
     const fechaElegida = document.getElementById('fechaLlegada').value;
     const tokenJWT = sessionStorage.getItem('tokenSession');
 
     if (!fechaElegida) {
-        alert('Por favor, asegúrate de seleccionar una fecha válida primero.');
-        return;
+        return mostrarNotificacion('Selecciona una fecha primero.', 'error');
     }
 
-    if (!confirm(`¿Estás completamente seguro de que deseas cancelar tu reserva para el día ${fechaElegida}?`)) {
-        return;
+    try {
+        const res = await fetch(`${API_URL}/reservas/mis-reservas?codigoAlumno=${encodeURIComponent(codigoAlumno)}`, {
+            headers: { 'Authorization': `Bearer ${tokenJWT}` }
+        });
+        const reservas = await res.json();
+        if (!res.ok) throw new Error(reservas.error || 'No se pudo consultar tus reservas.');
+
+        const reservaActiva = reservas.find(r => {
+            const fechaItem = String(r.fecha_reserva).slice(0, 10);
+            return fechaItem === fechaElegida && r.estado_reserva === 'PENDIENTE';
+        });
+
+        if (!reservaActiva) {
+            return mostrarNotificacion(`No tienes ninguna reserva pendiente para el ${fechaElegida}.`, 'error');
+        }
+
+        const horaFormateada = String(reservaActiva.hora_llegada_programada).slice(0, 5);
+        document.getElementById('cancel-codigo').textContent = reservaActiva.codigo_alumno;
+        document.getElementById('cancel-fecha').textContent = fechaElegida;
+        document.getElementById('cancel-hora').textContent = `${horaFormateada} hrs`;
+        document.getElementById('cancel-estado').textContent = reservaActiva.estado_reserva;
+
+        document.getElementById('modal-cancelar-reserva').style.display = 'flex';
+    } catch (err) {
+        mostrarNotificacion(err.message, 'error');
     }
+}
+
+async function ejecutarCancelacionConfirmada() {
+    const fechaElegida = document.getElementById('fechaLlegada').value;
+    const tokenJWT = sessionStorage.getItem('tokenSession');
 
     try {
         const res = await fetch(`${API_URL}/reservas/cancelar`, {
@@ -116,61 +192,13 @@ async function cancelarMiReserva() {
         });
 
         const data = await res.json();
-        if (!res.ok) throw new Error(data.error || 'No se pudo procesar la cancelación.');
+        if (!res.ok) throw new Error(data.error || 'No se pudo cancelar la reserva.');
 
-        alert(data.mensaje || 'Reserva cancelada con éxito.');
+        document.getElementById('modal-cancelar-reserva').style.display = 'none';
         mostrarNotificacion(data.mensaje, 'success');
-        await cargarMapaWeb();
+        await cargarDisponibilidadAforo();
     } catch (err) {
-        alert(`Error al cancelar: ${err.message}`);
-        mostrarNotificacion(err.message, 'error');
-    }
-}
-
-async function solicitarReservaSlot(idEspacio) {
-    const fechaElegida = document.getElementById('fechaLlegada').value;
-    const horaElegida = document.getElementById('horaLlegada').value;
-    const tokenJWT = sessionStorage.getItem('tokenSession');
-
-    if (!horaElegida) return alert('Por favor, ingresa una hora estimada de llegada.');
-    if (!confirm(`¿Separar el slot ${idEspacio} para hoy a las ${horaElegida}?`)) return;
-
-    try {
-        const res = await fetch(`${API_URL}/reservas/crear`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${tokenJWT}`
-            },
-            body: JSON.stringify({
-                codigo_alumno: codigoAlumno,
-                id_espacio: idEspacio,
-                otp_verificado: '000000',
-                fecha_reserva: fechaElegida,
-                hora_llegada: horaElegida
-            })
-        });
-
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || 'Fallo al procesar tu reserva.');
-
-        if (data.qrCode) {
-            const imgQR = document.getElementById('qr-reserva-img');
-            if (imgQR) imgQR.src = data.qrCode;
-
-            const txtPlaza = document.getElementById('qr-plaza-id');
-            if (txtPlaza) txtPlaza.textContent = idEspacio;
-
-            const txtFecha = document.getElementById('qr-fecha');
-            if (txtFecha) txtFecha.textContent = fechaElegida;
-
-            const modal = document.getElementById('modal-confirmacion-qr');
-            if (modal) modal.style.display = 'flex';
-        }
-
-        mostrarNotificacion(data.mensaje, 'success');
-        cargarMapaWeb();
-    } catch (err) {
+        document.getElementById('modal-cancelar-reserva').style.display = 'none';
         mostrarNotificacion(err.message, 'error');
     }
 }
