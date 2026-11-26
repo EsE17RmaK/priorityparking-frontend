@@ -201,3 +201,107 @@ button:hover {
     text-align: center;
     color: #f56565;
 }
+
+.kpi-row {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+    margin-bottom: 22px;
+}
+
+.kpi-box {
+    background: #1a202c;
+    border: 1px solid #4a5568;
+    border-radius: 8px;
+    padding: 12px;
+    text-align: center;
+}
+
+.kpi-title {
+    display: block;
+    font-size: 12px;
+    color: #a0aec0;
+    margin-bottom: 4px;
+}
+
+.kpi-val {
+    font-size: 22px;
+    color: #ffffff;
+}
+
+.kpi-red { border-color: #e53e3e; }
+.kpi-amber { border-color: #dd6b20; }
+.kpi-gray { border-color: #718096; }
+.kpi-green { border-color: #38a169; }
+
+.panel-box {
+    background: #1a202c;
+    padding: 18px;
+    border-radius: 8px;
+    border: 1px solid #4a5568;
+}
+
+.btn-warning {
+    background: #dd6b20;
+}
+
+.btn-warning:hover {
+    background: #c05621;
+}
+
+.monitor-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+}
+
+.btn-sm {
+    width: auto;
+    padding: 8px 14px;
+    font-size: 14px;
+}
+
+.lista-operativa {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 12px;
+}
+
+.fila-reserva {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #1a202c;
+    border: 1px solid #4a5568;
+    border-radius: 8px;
+    padding: 12px 16px;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.fila-reserva.en-planta {
+    border-left: 4px solid #e53e3e;
+}
+
+.fila-reserva.pendiente {
+    border-left: 4px solid #dd6b20;
+}
+
+.badge-estado {
+    font-size: 12px;
+    font-weight: bold;
+    padding: 3px 8px;
+    border-radius: 4px;
+    text-transform: uppercase;
+}
+
+.badge-dentro { background: #fed7d7; color: #9b2c2c; }
+.badge-pendiente { background: #feebc8; color: #9c4221; }
+
+@media (max-width: 768px) {
+    .kpi-row, .grid-layout {
+        grid-template-columns: 1fr;
+    }
+}

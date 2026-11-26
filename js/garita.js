@@ -1,4 +1,6 @@
-const API_URL = 'http://localhost:3000/api';
+const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    ? 'http://localhost:3000/api'
+    : 'https://priorityparking-backend-production.up.railway.app/api';
 
 document.addEventListener('DOMContentLoaded', () => {
     const operador = sessionStorage.getItem('operadorLogueado');
@@ -11,14 +13,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     document.getElementById('btnRegistrarIngreso').addEventListener('click', registrarIngreso);
-    document.getElementById('btnRefrescarMonitor').addEventListener('click', cargarMapaMonitoreo);
-    
-    const btnLogout = document.getElementById('btnCerrarSesion');
-    if (btnLogout) {
-        btnLogout.addEventListener('click', cerrarSesion);
-    }
+    document.getElementById('btnGuardarBloqueo').addEventListener('click', registrarBloqueoDiario);
+    document.getElementById('btnRefrescarMonitor').addEventListener('click', refrescarTodoGarita);
 
-    cargarMapaMonitoreo();
+    const btnLogout = document.getElementById('btnCerrarSesion');
+    if (btnLogout) btnLogout.addEventListener('click', cerrarSesion);
+
+    refrescarTodoGarita();
 });
 
 function cerrarSesion() {
@@ -36,79 +37,147 @@ function mostrarAlerta(mensaje, tipo) {
     setTimeout(() => el.classList.add('hidden'), 5000);
 }
 
-async function cargarMapaMonitoreo() {
-    const container = document.getElementById('monitorMapa');
-    container.innerHTML = '<p class="status-loading">Consultando base de datos...</p>';
-    
-    const tokenJWT = sessionStorage.getItem('tokenSession'); 
+async function refrescarTodoGarita() {
+    await Promise.all([cargarAforoGarita(), cargarMonitorOperativo()]);
+}
+
+async function cargarAforoGarita() {
+    const tokenJWT = sessionStorage.getItem('tokenSession');
+    try {
+        const res = await fetch(`${API_URL}/admin/aforo`, {
+            headers: { 'Authorization': `Bearer ${tokenJWT}` }
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Error al consultar aforo.');
+
+        document.getElementById('garitaCapacidad').textContent = data.capacidadMensual ?? 70;
+        document.getElementById('garitaOcupados').textContent = data.ocupadosActuales ?? 0;
+        document.getElementById('garitaEsperados').textContent = data.reservasEsperadasHoy ?? 0;
+        document.getElementById('garitaBloqueados').textContent = data.bloqueadosHoy ?? 0;
+        document.getElementById('garitaDisponibles').textContent = data.disponiblesHoy ?? 0;
+
+        document.getElementById('cupos_bloqueados').value = data.bloqueadosHoy ?? 0;
+        if (data.motivoBloqueoHoy) {
+            document.getElementById('motivo_bloqueo').value = data.motivoBloqueoHoy;
+        }
+    } catch (err) {
+        mostrarAlerta(err.message, 'error');
+    }
+}
+
+async function registrarBloqueoDiario() {
+    const tokenJWT = sessionStorage.getItem('tokenSession');
+    const cuposBloqueados = parseInt(document.getElementById('cupos_bloqueados').value, 10);
+    const motivo = document.getElementById('motivo_bloqueo').value.trim();
+
+    if (isNaN(cuposBloqueados) || cuposBloqueados < 0) {
+        mostrarAlerta('Ingrese una cantidad válida de lugares a bloquear (0 o más).', 'error');
+        return;
+    }
 
     try {
-        const res = await fetch(`${API_URL}/garita/espacios`, {
-            method: 'GET',
+        const res = await fetch(`${API_URL}/garita/bloqueo-diario`, {
+            method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${tokenJWT}`
-            }
+            },
+            body: JSON.stringify({ cuposBloqueados, motivo })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'No se pudo actualizar el bloqueo diario.');
+
+        mostrarAlerta(data.mensaje, 'success');
+        await refrescarTodoGarita();
+    } catch (err) {
+        mostrarAlerta(err.message, 'error');
+    }
+}
+
+async function cargarMonitorOperativo() {
+    const container = document.getElementById('monitorLista');
+    container.innerHTML = '<p style="text-align:center;color:#a0aec0;">Consultando movimiento del día...</p>';
+    const tokenJWT = sessionStorage.getItem('tokenSession');
+
+    try {
+        const res = await fetch(`${API_URL}/garita/espacios`, {
+            headers: { 'Authorization': `Bearer ${tokenJWT}` }
         });
 
         if (res.status === 401 || res.status === 403) {
             throw new Error('No autorizado. Inicie sesión desde el portal de garita.');
         }
 
-        const espacios = await res.json();
+        const lista = await res.json();
         container.innerHTML = '';
 
-        espacios.forEach(espacio => {
-            const div = document.createElement('div');
-            div.className = `slot ${espacio.estado}`;
-            
-            const idDiv = document.createElement('div');
-            idDiv.className = 'slot-slot-id';
-            idDiv.textContent = espacio.id_espacio;
+        if (!lista.length) {
+            container.innerHTML = '<p style="text-align:center;color:#a0aec0;">No hay vehículos en planta ni reservas pendientes para hoy.</p>';
+            return;
+        }
 
-            const small = document.createElement('small');
-            small.className = 'slot-status';
-            small.textContent = espacio.estado;
+        lista.forEach(item => {
+            const enPlanta = item.estado_reserva === 'EN_CURSO' || item.estado_reserva === 'COMPLETADA';
+            const row = document.createElement('div');
+            row.className = `fila-reserva ${enPlanta ? 'en-planta' : 'pendiente'}`;
 
-            div.appendChild(idDiv);
-            div.appendChild(small);
+            const info = document.createElement('div');
+            const titulo = document.createElement('strong');
+            titulo.textContent = `${item.codigo_alumno}${item.nombre_completo ? ' — ' + item.nombre_completo : ''}`;
 
-            if (espacio.estado === 'OCUPADO') {
-                const btnLiberar = document.createElement('button');
-                btnLiberar.className = 'btn-liberar';
-                btnLiberar.textContent = 'Liberar Slot';
-                btnLiberar.addEventListener('click', () => registrarSalida(espacio.id_espacio));
-                div.appendChild(btnLiberar);
+            const sub = document.createElement('div');
+            sub.style.fontSize = '13px';
+            sub.style.color = '#a0aec0';
+            const hora = item.hora_llegada_programada ? String(item.hora_llegada_programada).slice(0, 5) : '--:--';
+            sub.textContent = `Hora programada: ${hora}`;
+
+            info.append(titulo, sub);
+
+            const acciones = document.createElement('div');
+            acciones.style.display = 'flex';
+            acciones.style.alignItems = 'center';
+            acciones.style.gap = '10px';
+
+            const badge = document.createElement('span');
+            badge.className = `badge-estado ${enPlanta ? 'badge-dentro' : 'badge-pendiente'}`;
+            badge.textContent = enPlanta ? 'EN PLANTA' : 'ESPERANDO INGRESO';
+            acciones.appendChild(badge);
+
+            if (enPlanta) {
+                const btnSalida = document.createElement('button');
+                btnSalida.className = 'btn-liberar btn-sm';
+                btnSalida.style.marginTop = '0';
+                btnSalida.textContent = 'Registrar Salida (-1)';
+                btnSalida.addEventListener('click', () => registrarSalida(item.codigo_alumno));
+                acciones.appendChild(btnSalida);
             }
 
-            container.appendChild(div);
+            row.append(info, acciones);
+            container.appendChild(row);
         });
     } catch (err) {
-        container.innerHTML = `<p class="status-error">${err.message}</p>`;
+        container.innerHTML = `<p style="text-align:center;color:#f56565;">${err.message}</p>`;
     }
 }
 
 async function registrarIngreso() {
     const codigoInput = document.getElementById('codigo_alumno');
-    const espacioInput = document.getElementById('id_espacio');
+    const codigo_alumno = codigoInput.value.trim().toUpperCase();
+    const tokenJWT = sessionStorage.getItem('tokenSession');
 
-    const codigo_alumno = codigoInput.value.trim();
-    const id_espacio = espacioInput.value.trim();
-    const tokenJWT = sessionStorage.getItem('tokenSession'); 
-
-    if (!codigo_alumno || !id_espacio) {
-        mostrarAlerta('Por favor, complete ambos campos para validar el ingreso.', 'error');
+    if (!codigo_alumno) {
+        mostrarAlerta('Ingrese el código de alumno o escanee el QR.', 'error');
         return;
     }
 
     try {
         const res = await fetch(`${API_URL}/garita/registrar-ingreso`, {
             method: 'POST',
-            headers: { 
+            headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${tokenJWT}`
             },
-            body: JSON.stringify({ codigo_alumno, id_espacio })
+            body: JSON.stringify({ codigo_alumno })
         });
         const data = await res.json();
 
@@ -116,32 +185,31 @@ async function registrarIngreso() {
 
         mostrarAlerta(data.mensaje, 'success');
         codigoInput.value = '';
-        espacioInput.value = '';
-        cargarMapaMonitoreo();
+        await refrescarTodoGarita();
     } catch (err) {
         mostrarAlerta(err.message, 'error');
     }
 }
 
-async function registrarSalida(idEspacio) {
-    if (!confirm(`¿Confirmas la salida del vehículo del slot ${idEspacio}?`)) return;
-    const tokenJWT = sessionStorage.getItem('tokenSession'); 
+async function registrarSalida(codigoAlumno) {
+    if (!confirm(`¿Confirmas la salida del vehículo del estudiante ${codigoAlumno}?`)) return;
+    const tokenJWT = sessionStorage.getItem('tokenSession');
 
     try {
         const res = await fetch(`${API_URL}/garita/registrar-salida`, {
             method: 'POST',
-            headers: { 
+            headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${tokenJWT}`
             },
-            body: JSON.stringify({ id_espacio: idEspacio })
+            body: JSON.stringify({ codigo_alumno: codigoAlumno })
         });
         const data = await res.json();
 
         if (!res.ok) throw new Error(data.error || 'No se pudo procesar la salida.');
 
         mostrarAlerta(data.mensaje, 'success');
-        cargarMapaMonitoreo();
+        await refrescarTodoGarita();
     } catch (err) {
         mostrarAlerta(err.message, 'error');
     }
