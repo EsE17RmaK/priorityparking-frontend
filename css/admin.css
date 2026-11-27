@@ -408,3 +408,102 @@ th {
 .badge-blue { background: #dbeafe; color: #1e40af; }
 .badge-amber { background: #fef3c7; color: #92400e; }
 .badge-gray { background: #f1f5f9; color: #475569; }
+
+/* Validación de contraseña segura y ojo en Cuentas Garita */
+.form-full {
+    grid-column: 1 / -1;
+}
+
+.hint-estado {
+    display: block;
+    margin-top: 0.35rem;
+    font-size: 0.78rem;
+    color: #64748b;
+}
+
+.hint-estado.ok {
+    color: #16a34a;
+    font-weight: 600;
+}
+
+.hint-estado.err {
+    color: #dc2626;
+    font-weight: 600;
+}
+
+.password-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.password-wrapper input {
+    padding-right: 2.75rem;
+}
+
+.btn-eye {
+    position: absolute;
+    right: 0.65rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.1rem;
+    line-height: 1;
+    padding: 0.25rem;
+}
+
+.medidor-box {
+    margin-top: 0.6rem;
+}
+
+.barra-fuerza-bg {
+    width: 100%;
+    height: 6px;
+    background-color: #e2e8f0;
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+.barra-fuerza-fill {
+    height: 100%;
+    width: 0%;
+    background-color: #dc2626;
+    transition: width 0.25s ease, background-color 0.25s ease;
+}
+
+.texto-fuerza {
+    display: block;
+    margin-top: 0.35rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #475569;
+}
+
+.checklist-pass {
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.35rem 1rem;
+    margin-top: 0.65rem;
+    font-size: 0.8rem;
+}
+
+.checklist-pass li.invalido {
+    color: #dc2626;
+}
+
+.checklist-pass li.valido {
+    color: #16a34a;
+    font-weight: 600;
+}
+
+.btn-primary:disabled {
+    background-color: #94a3b8;
+    cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+    .checklist-pass {
+        grid-template-columns: 1fr;
+    }
+}
