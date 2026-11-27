@@ -1,7 +1,6 @@
-// js/admin.js
-const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+const API_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
     ? 'http://localhost:3000/api'
-    : 'postgresql://postgres:NcWkIBCnbNIjjZjqzOHMkTlCYavqccWd@altaria.proxy.rlwy.net:45383/railway'; // Reemplaza con tu URL real de Railway
+    : 'https://priorityparking-mvp-production.up.railway.app/api';
 
 const TITULOS_VISTAS = {
     'seccion-dashboard': 'Panel General de Aforo y Capacidad',
@@ -43,7 +42,6 @@ document.addEventListener('DOMContentLoaded', () => {
         window.location.href = 'login-admin.html';
     });
 
-    // Navegación entre pestañas del sidebar
     document.querySelectorAll('.nav-item').forEach(link => {
         link.addEventListener('click', (e) => {
             e.preventDefault();
@@ -64,11 +62,9 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Cargar datos iniciales del Dashboard y Garitas
     cargarEstadoAforo(token);
     cargarOperadoresGarita(token);
 
-    // 1. Configurar Aforo Mensual
     document.getElementById('formConfigurarAforo').addEventListener('submit', async (e) => {
         e.preventDefault();
         const alertaAforo = document.getElementById('alertaAforo');
@@ -95,7 +91,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // 2. Subida masiva CSV
     document.getElementById('formCargaCsv').addEventListener('submit', async (e) => {
         e.preventDefault();
         const inputArchivo = document.getElementById('inputCsvPadron');
@@ -136,7 +131,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // 3. Crear operador de Garita
     document.getElementById('formCrearGarita').addEventListener('submit', async (e) => {
         e.preventDefault();
         const alertaGarita = document.getElementById('alertaGarita');
