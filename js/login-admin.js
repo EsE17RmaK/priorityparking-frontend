@@ -1,7 +1,6 @@
-// js/login-admin.js
-const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+const API_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
     ? 'http://localhost:3000/api'
-    : 'postgresql://postgres:NcWkIBCnbNIjjZjqzOHMkTlCYavqccWd@altaria.proxy.rlwy.net:45383/railway'; // Reemplaza con tu URL real de Railway
+    : 'https://priorityparking-mvp-production.up.railway.app/api';
 
 document.getElementById('formAdminLogin').addEventListener('submit', async (e) => {
     e.preventDefault();
