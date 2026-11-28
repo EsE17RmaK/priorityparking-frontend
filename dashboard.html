@@ -4,15 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard del Estudiante - ParkingU</title>
-    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="css/dashboard.css?v=2">
 </head>
 <body>
     <header class="top-nav">
         <div class="logo">ParkingU</div>
         <div class="user-profile">
-            <span class="avatar">JP</span>
-            <span class="user-name" id="userNameLabel">Juan Pérez</span>
-            <button id="btnCerrarSesion" class="btn-logout">Salir</button>
+            <span class="avatar" id="avatarUsuario">ES</span>
+            <span class="user-name" id="userNameLabel">Estudiante</span>
+            <button id="btnCerrarSesion" type="button" class="btn-logout">Salir</button>
         </div>
     </header>
 
@@ -30,6 +30,11 @@
         <main class="main-content">
             <h1 class="welcome-title">Hola, <span id="nombreCorto">Estudiante</span></h1>
 
+            <div id="alertaPenalizacion" class="penalty-banner hidden" role="alert">
+                <strong>⚠️ Penalización activa en tu cuenta</strong>
+                <p id="detallePenalizacion"></p>
+            </div>
+
             <section class="cards-grid">
                 <div class="card">
                     <span class="card-label">Nivel de prioridad</span>
@@ -43,18 +48,18 @@
                 </div>
 
                 <div class="card">
-                    <span class="card-label">Espacios disponibles</span>
+                    <span class="card-label">Cupos disponibles hoy</span>
                     <div class="card-metric" id="metricEspacios">--</div>
                 </div>
             </section>
 
             <div class="actions-row">
-                <a href="reserva.html" class="btn-primary">Nueva reserva</a>
-                <button class="btn-secondary" id="btnHistorial">Ver historial</button>
+                <a href="reserva.html" id="btnNuevaReserva" class="btn-primary">Nueva reserva</a>
+                <button type="button" class="btn-secondary" id="btnHistorial">Ver historial</button>
             </div>
         </main>
     </div>
 
-    <script src="js/dashboard.js"></script>
+    <script src="js/dashboard.js?v=2"></script>
 </body>
 </html>
