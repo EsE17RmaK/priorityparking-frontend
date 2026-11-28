@@ -1,6 +1,6 @@
-const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+const API_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
     ? 'http://localhost:3000/api'
-    : 'https://priorityparking-backend-production.up.railway.app/api';
+    : 'https://priorityparking-mvp-production.up.railway.app/api';
 
 let codigoAlumno = '';
 
@@ -11,11 +11,12 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
-    document.getElementById('displayCodigo').innerText = codigoAlumno;
+    document.getElementById('displayCodigo').textContent = codigoAlumno;
 
     document.getElementById('btnLogout').addEventListener('click', cerrarSesion);
     document.getElementById('btnConfirmarCupo').addEventListener('click', solicitarReservaCupo);
     document.getElementById('btnAbrirModalCancelar').addEventListener('click', abrirModalCancelar);
+    document.getElementById('fechaLlegada').addEventListener('change', cargarDisponibilidadAforo);
 
     document.getElementById('btn-cerrar-qr').addEventListener('click', () => {
         document.getElementById('modal-confirmacion-qr').style.display = 'none';
@@ -37,17 +38,15 @@ function configurarCamposFechaHora() {
     const selectHora = document.getElementById('horaLlegada');
 
     const hoy = new Date();
-    const formatoHoy = hoy.toLocaleDateString('sv-SE');
+    const formatoHoy = hoy.toLocaleDateString('sv-SE', { timeZone: 'America/Lima' });
 
-    const manana = new Date();
-    manana.setDate(manana.getDate() + 1);
-    const formatoManana = manana.toLocaleDateString('sv-SE');
+    const manana = new Date(hoy.getTime() + 24 * 60 * 60 * 1000);
+    const formatoManana = manana.toLocaleDateString('sv-SE', { timeZone: 'America/Lima' });
 
     inputFecha.value = formatoHoy;
     inputFecha.min = formatoHoy;
     inputFecha.max = formatoManana;
 
-    // Seleccionar la siguiente hora en punto por defecto dentro del rango 07:00 - 21:00
     const siguienteHora = Math.min(21, Math.max(7, hoy.getHours() + 1));
     selectHora.value = `${String(siguienteHora).padStart(2, '0')}:00`;
 }
@@ -61,7 +60,7 @@ function cerrarSesion() {
 
 function mostrarNotificacion(texto, tipo) {
     const box = document.getElementById('panelAlert');
-    box.innerText = texto;
+    box.textContent = texto;
     box.className = `alert ${tipo}`;
     box.classList.remove('hidden');
     setTimeout(() => box.classList.add('hidden'), 5000);
@@ -70,9 +69,11 @@ function mostrarNotificacion(texto, tipo) {
 async function cargarDisponibilidadAforo() {
     const tokenJWT = sessionStorage.getItem('tokenSession');
     const btnReservar = document.getElementById('btnConfirmarCupo');
+    const fechaElegida = document.getElementById('fechaLlegada').value;
 
     try {
-        const res = await fetch(`${API_URL}/admin/aforo`, {
+        const query = fechaElegida ? `?fecha=${encodeURIComponent(fechaElegida)}` : '';
+        const res = await fetch(`${API_URL}/admin/aforo${query}`, {
             headers: { 'Authorization': `Bearer ${tokenJWT}` }
         });
         const data = await res.json();
@@ -150,9 +151,10 @@ async function abrirModalCancelar() {
         const res = await fetch(`${API_URL}/reservas/mis-reservas?codigoAlumno=${encodeURIComponent(codigoAlumno)}`, {
             headers: { 'Authorization': `Bearer ${tokenJWT}` }
         });
-        const reservas = await res.json();
-        if (!res.ok) throw new Error(reservas.error || 'No se pudo consultar tus reservas.');
+        const payload = await res.json();
+        if (!res.ok) throw new Error(payload.error || 'No se pudo consultar tus reservas.');
 
+        const reservas = Array.isArray(payload) ? payload : (payload.reservas || []);
         const reservaActiva = reservas.find(r => {
             const fechaItem = String(r.fecha_reserva).slice(0, 10);
             return fechaItem === fechaElegida && r.estado_reserva === 'PENDIENTE';

@@ -1,7 +1,6 @@
-// js/admin.js
-const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+const API_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
     ? 'http://localhost:3000/api'
-    : 'https://TU-BACKEND-EN-RAILWAY.up.railway.app/api'; // Reemplaza con tu URL real de Railway
+    : 'https://priorityparking-mvp-production.up.railway.app/api';
 
 const TITULOS_VISTAS = {
     'seccion-dashboard': 'Panel General de Aforo y Capacidad',
@@ -24,6 +23,114 @@ function mostrarAlerta(elemento, mensaje, tipo) {
     elemento.classList.remove('hidden');
 }
 
+function activarPestana(targetId, token) {
+    const link = document.querySelector(`.nav-item[data-tab="${targetId}"]`);
+    const seccion = document.getElementById(targetId);
+    if (!link || !seccion) return;
+
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    link.classList.add('active');
+
+    document.querySelectorAll('.admin-section').forEach(sec => sec.classList.add('hidden'));
+    seccion.classList.remove('hidden');
+
+    const tituloEl = document.getElementById('tituloVistaAdmin');
+    if (tituloEl && TITULOS_VISTAS[targetId]) {
+        tituloEl.innerText = TITULOS_VISTAS[targetId];
+    }
+
+    if (targetId === 'seccion-dashboard') cargarEstadoAforo(token);
+    if (targetId === 'seccion-garitas') cargarOperadoresGarita(token);
+}
+
+function inicializarValidacionGarita() {
+    const inputNombre = document.getElementById('garitaNombre');
+    const inputUser = document.getElementById('garitaUsername');
+    const inputPass = document.getElementById('garitaPassword');
+    const btnToggle = document.getElementById('btnToggleGaritaPass');
+    const btnSubmit = document.getElementById('btnCrearGarita');
+    const hintUser = document.getElementById('hintUsuarioGarita');
+    const barra = document.getElementById('barraFuerzaGarita');
+    const txtFuerza = document.getElementById('textoFuerzaGarita');
+
+    if (!inputPass || !btnToggle) return;
+
+    btnToggle.addEventListener('click', () => {
+        const oculto = inputPass.type === 'password';
+        inputPass.type = oculto ? 'text' : 'password';
+        btnToggle.textContent = oculto ? '🙈' : '👁️';
+    });
+
+    const marcarRegla = (id, cumple, texto) => {
+        const li = document.getElementById(id);
+        if (!li) return;
+        li.className = cumple ? 'valido' : 'invalido';
+        li.textContent = `${cumple ? '✔' : '✖'} ${texto}`;
+    };
+
+    const validar = () => {
+        const nombre = inputNombre.value.trim();
+        const user = inputUser.value.trim().toUpperCase();
+        const pass = inputPass.value;
+
+        const userOk = /^[A-Z0-9_-]{4,25}$/.test(user);
+        if (!user) {
+            hintUser.className = 'hint-estado';
+            hintUser.textContent = 'Mínimo 4 caracteres (letras, números o guiones).';
+        } else if (userOk) {
+            hintUser.className = 'hint-estado ok';
+            hintUser.textContent = `✔ Usuario válido (${user})`;
+        } else {
+            hintUser.className = 'hint-estado err';
+            hintUser.textContent = '✖ Formato inválido (4-25 caracteres, sin espacios).';
+        }
+
+        const cLen = pass.length >= 8;
+        const cMayus = /[A-Z]/.test(pass);
+        const cMinus = /[a-z]/.test(pass);
+        const cNum = /\d/.test(pass);
+        const cSimb = /[^A-Za-z0-9]/.test(pass);
+
+        const passLower = pass.toLowerCase();
+        const usaUsuario = user.length >= 3 && passLower.includes(user.toLowerCase());
+        const usaNombre = nombre.toLowerCase().split(/\s+/).some(p => p.length >= 3 && passLower.includes(p));
+        const cPersonal = pass.length > 0 && !usaUsuario && !usaNombre;
+
+        marcarRegla('chkLen', cLen, 'Mínimo 8 caracteres');
+        marcarRegla('chkMayus', cMayus, 'Al menos 1 letra mayúscula (A-Z)');
+        marcarRegla('chkMinus', cMinus, 'Al menos 1 letra minúscula (a-z)');
+        marcarRegla('chkNum', cNum, 'Al menos 1 número (0-9)');
+        marcarRegla('chkSimb', cSimb, 'Al menos 1 símbolo especial');
+        marcarRegla('chkPersonal', cPersonal, 'No contiene usuario ni nombre');
+
+        const puntos = [cLen, cMayus, cMinus, cNum, cSimb, cPersonal].filter(Boolean).length;
+        barra.style.width = `${Math.round((puntos / 6) * 100)}%`;
+
+        if (pass.length === 0) {
+            barra.style.backgroundColor = '#dc2626';
+            txtFuerza.textContent = 'Nivel de seguridad: Sin ingresar';
+            txtFuerza.style.color = '#475569';
+        } else if (puntos < 4) {
+            barra.style.backgroundColor = '#dc2626';
+            txtFuerza.textContent = 'Nivel de seguridad: Débil';
+            txtFuerza.style.color = '#dc2626';
+        } else if (puntos < 6) {
+            barra.style.backgroundColor = '#d97706';
+            txtFuerza.textContent = 'Nivel de seguridad: Media (completa los requisitos)';
+            txtFuerza.style.color = '#d97706';
+        } else {
+            barra.style.backgroundColor = '#16a34a';
+            txtFuerza.textContent = '✔ Contraseña segura validada';
+            txtFuerza.style.color = '#15803d';
+        }
+
+        btnSubmit.disabled = !(nombre.length >= 3 && userOk && puntos === 6);
+    };
+
+    [inputNombre, inputUser, inputPass].forEach(el => el.addEventListener('input', validar));
+    document.getElementById('formCrearGarita').addEventListener('reset', () => setTimeout(validar, 0));
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     const token = sessionStorage.getItem('tokenSession');
     const usuario = token ? decodificarJwt(token) : null;
@@ -43,32 +150,25 @@ document.addEventListener('DOMContentLoaded', () => {
         window.location.href = 'login-admin.html';
     });
 
-    // Navegación entre pestañas del sidebar
     document.querySelectorAll('.nav-item').forEach(link => {
         link.addEventListener('click', (e) => {
             e.preventDefault();
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            link.classList.add('active');
-
             const targetId = link.getAttribute('data-tab');
-            document.querySelectorAll('.admin-section').forEach(sec => sec.classList.add('hidden'));
-            document.getElementById(targetId).classList.remove('hidden');
-
-            const tituloEl = document.getElementById('tituloVistaAdmin');
-            if (tituloEl && TITULOS_VISTAS[targetId]) {
-                tituloEl.innerText = TITULOS_VISTAS[targetId];
-            }
-
-            if (targetId === 'seccion-dashboard') cargarEstadoAforo(token);
-            if (targetId === 'seccion-garitas') cargarOperadoresGarita(token);
+            window.history.replaceState(null, '', `#${targetId}`);
+            activarPestana(targetId, token);
         });
     });
 
-    // Cargar datos iniciales del Dashboard y Garitas
-    cargarEstadoAforo(token);
-    cargarOperadoresGarita(token);
+    inicializarValidacionGarita();
 
-    // 1. Configurar Aforo Mensual
+    const hashInicial = window.location.hash.replace('#', '');
+    if (hashInicial && document.getElementById(hashInicial)) {
+        activarPestana(hashInicial, token);
+    } else {
+        cargarEstadoAforo(token);
+        cargarOperadoresGarita(token);
+    }
+
     document.getElementById('formConfigurarAforo').addEventListener('submit', async (e) => {
         e.preventDefault();
         const alertaAforo = document.getElementById('alertaAforo');
@@ -95,7 +195,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // 2. Subida masiva CSV
     document.getElementById('formCargaCsv').addEventListener('submit', async (e) => {
         e.preventDefault();
         const inputArchivo = document.getElementById('inputCsvPadron');
@@ -136,7 +235,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // 3. Crear operador de Garita
     document.getElementById('formCrearGarita').addEventListener('submit', async (e) => {
         e.preventDefault();
         const alertaGarita = document.getElementById('alertaGarita');

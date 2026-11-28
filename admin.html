@@ -29,7 +29,7 @@
         <main class="main-content">
             <h1 class="welcome-title" id="tituloVistaAdmin">Panel General de Aforo y Capacidad</h1>
 
-            <!-- SECCIÓN 1 (INICIAL POR DEFECTO): DASHBOARD DE AFORO POR CANTIDAD -->
+            <!-- SECCIÓN 1: DASHBOARD DE AFORO POR CANTIDAD -->
             <section id="seccion-dashboard" class="admin-section">
                 <div class="cards-grid">
                     <div class="card">
@@ -89,7 +89,7 @@
                     </div>
                 </div>
 
-                <!-- CONFIGURACIÓN DE AFORO MENSUAL POR EL ADMINISTRADOR -->
+                <!-- CONFIGURACIÓN DE AFORO MENSUAL -->
                 <div class="section-card">
                     <h2 class="section-title">Configurar Capacidad de Aforo Mensual</h2>
                     <p class="section-desc">Define el número total de espacios habilitados para el mes en curso. Las variaciones diarias por contingencia las gestiona Garita.</p>
@@ -103,7 +103,7 @@
                         </div>
                         <div class="form-group">
                             <label for="inputCapacidadMensual">Capacidad Total de Espacios</label>
-                            <input type="number" id="inputCapacidadMensual" name="capacidadMensual" min="1" max="1000" placeholder="Ej: 70" required>
+                            <input type="number" id="inputCapacidadMensual" name="capacidadMensual" min="1" max="1000" required>
                         </div>
                         <div class="form-group form-action">
                             <button type="submit" id="btnGuardarAforo" class="btn-primary">Actualizar Aforo Mensual</button>
@@ -164,21 +164,42 @@
 
                     <div id="alertaGarita" class="alert hidden"></div>
 
-                    <form id="formCrearGarita" class="form-grid">
+                    <form id="formCrearGarita" class="form-grid" novalidate>
                         <div class="form-group">
                             <label for="garitaNombre">Nombre Completo</label>
-                            <input type="text" id="garitaNombre" name="nombreCompleto" placeholder="Ej: Carlos Mendoza" required>
+                            <input type="text" id="garitaNombre" name="nombreCompleto" autocomplete="off" required>
                         </div>
+
                         <div class="form-group">
                             <label for="garitaUsername">Usuario</label>
-                            <input type="text" id="garitaUsername" name="username" placeholder="Ej: GARITA_02" required>
+                            <input type="text" id="garitaUsername" name="username" autocomplete="off" required>
+                            <small id="hintUsuarioGarita" class="hint-estado">Mínimo 4 caracteres (letras, números o guiones).</small>
                         </div>
-                        <div class="form-group">
-                            <label for="garitaPassword">Contraseña</label>
-                            <input type="password" id="garitaPassword" name="password" placeholder="Mínimo 6 caracteres" minlength="6" required>
+
+                        <div class="form-group form-full">
+                            <label for="garitaPassword">Contraseña Segura</label>
+                            <div class="password-wrapper">
+                                <input type="password" id="garitaPassword" name="password" placeholder="••••••••" autocomplete="new-password" required>
+                                <button type="button" id="btnToggleGaritaPass" class="btn-eye" aria-label="Mostrar u ocultar contraseña">👁️</button>
+                            </div>
+
+                            <div class="medidor-box">
+                                <div class="barra-fuerza-bg"><div id="barraFuerzaGarita" class="barra-fuerza-fill"></div></div>
+                                <span id="textoFuerzaGarita" class="texto-fuerza">Nivel de seguridad: Sin ingresar</span>
+                            </div>
+
+                            <ul class="checklist-pass">
+                                <li id="chkLen" class="invalido">✖ Mínimo 8 caracteres</li>
+                                <li id="chkMayus" class="invalido">✖ Al menos 1 letra mayúscula (A-Z)</li>
+                                <li id="chkMinus" class="invalido">✖ Al menos 1 letra minúscula (a-z)</li>
+                                <li id="chkNum" class="invalido">✖ Al menos 1 número (0-9)</li>
+                                <li id="chkSimb" class="invalido">✖ Al menos 1 símbolo especial</li>
+                                <li id="chkPersonal" class="invalido">✖ No contiene usuario ni nombre</li>
+                            </ul>
                         </div>
-                        <div class="form-group form-action">
-                            <button type="submit" id="btnCrearGarita" class="btn-primary">Registrar Operador</button>
+
+                        <div class="form-group form-full">
+                            <button type="submit" id="btnCrearGarita" class="btn-primary" disabled>Registrar Operador</button>
                         </div>
                     </form>
                 </div>
@@ -205,6 +226,6 @@
         </main>
     </div>
 
-    <script src="js/admin.js"></script>
+    <script src="js/admin.js?v=4"></script>
 </body>
 </html>

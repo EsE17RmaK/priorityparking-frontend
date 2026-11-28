@@ -4,19 +4,34 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel de Garita - PriorityParking</title>
-    <link rel="stylesheet" href="css/garita.css">
+    <link rel="stylesheet" href="css/garita.css?v=6">
 </head>
 <body>
     <div class="container">
-        <div class="garita-header">
+        <header class="garita-header">
             <h2>👮 Control de Garita - Sede Lima Centro</h2>
-            <button id="btnCerrarSesion" type="button" class="btn-logout">Cerrar Sesión</button>
-        </div>
+            <div class="header-actions">
+                <div class="submenu-container">
+                    <button id="btnSubmenuCapacidad" type="button" class="btn-warning btn-sm" aria-expanded="false" aria-controls="menuCapacidadGarita">
+                        ⚙️ Ajustar Capacidad <span id="badgeReduccionHeader"></span> ▾
+                    </button>
+                    <div id="menuCapacidadGarita" class="submenu-dropdown hidden" role="menu">
+                        <button id="btnAbrirModalReducir" type="button" class="submenu-item" role="menuitem">
+                            ➖ Reducir / Modificar cupos hoy
+                        </button>
+                        <button id="btnLiberarCuposRapido" type="button" class="submenu-item submenu-item-liberar" role="menuitem">
+                            🔓 Liberar cupos bloqueados
+                        </button>
+                    </div>
+                </div>
+                <button id="btnCerrarSesion" type="button" class="btn-logout">Cerrar Sesión</button>
+            </div>
+        </header>
 
         <div id="globalAlert" class="alert hidden"></div>
 
         <!-- RESUMEN DE AFORO EN TIEMPO REAL -->
-        <div class="kpi-row">
+        <section class="kpi-row" aria-label="Indicadores de aforo">
             <div class="kpi-box">
                 <span class="kpi-title">Aforo Mensual</span>
                 <strong class="kpi-val" id="garitaCapacidad">--</strong>
@@ -30,48 +45,80 @@
                 <strong class="kpi-val" id="garitaEsperados">--</strong>
             </div>
             <div class="kpi-box kpi-gray">
-                <span class="kpi-title">Bloqueados Hoy</span>
+                <span class="kpi-title">Restados por Garita</span>
                 <strong class="kpi-val" id="garitaBloqueados">--</strong>
             </div>
             <div class="kpi-box kpi-green">
                 <span class="kpi-title">Disponibles Hoy</span>
                 <strong class="kpi-val" id="garitaDisponibles">--</strong>
             </div>
-        </div>
+        </section>
 
-        <div class="grid-layout">
-            <!-- PANEL 1: INGRESO VEHICULAR SIN SLOT -->
-            <div class="panel-box">
-                <h3>📥 Validar Ingreso Vehicular</h3>
-                <div class="form-group">
-                    <label for="codigo_alumno">Código de Alumno (o lectura QR)</label>
-                    <input type="text" id="codigo_alumno" placeholder="Ej: U20304050">
+        <!-- PANEL PRINCIPAL: VALIDACIÓN EN PUERTA -->
+        <section class="panel-box panel-principal">
+            <h3>🛂 Control de Acceso en Puerta</h3>
+            <p class="panel-sub">Escribe el código del alumno (sin @utp.edu.pe), pega el texto del QR o escanea con cámara para validar su ingreso (20 min de tolerancia) o registrar su salida.</p>
+            <div class="form-group">
+                <label for="codigo_alumno">Código de Alumno (sin @utp.edu.pe) o Lectura QR</label>
+                <div class="input-qr-row">
+                    <input type="text" id="codigo_alumno" autocomplete="off">
+                    <button id="btnToggleCamaraQr" type="button" class="btn-secondary btn-qr">📷 Escanear QR</button>
                 </div>
-                <button id="btnRegistrarIngreso" type="button">Validar e Ingresar (+1 Ocupado)</button>
             </div>
 
-            <!-- PANEL 2: BLOQUEO OPERATIVO DIARIO POR CONTINGENCIA -->
-            <div class="panel-box">
-                <h3>🚧 Bloqueo Operativo del Día</h3>
-                <div class="form-group">
-                    <label for="cupos_bloqueados">Cantidad de lugares a bloquear hoy</label>
-                    <input type="number" id="cupos_bloqueados" min="0" max="500" placeholder="Ej: 10">
+            <div id="lectorQrBox" class="lector-qr-box hidden">
+                <video id="videoQr" class="video-qr" playsinline muted></video>
+                <div class="lector-qr-footer">
+                    <span id="estadoCamaraQr" class="estado-camara">Apunta la cámara al código QR de la reserva...</span>
+                    <button id="btnDetenerCamaraQr" type="button" class="btn-logout btn-sm">Detener cámara</button>
                 </div>
-                <div class="form-group">
-                    <label for="motivo_bloqueo">Motivo (mantenimiento, evento, etc.)</label>
-                    <input type="text" id="motivo_bloqueo" placeholder="Ej: Evento institucional en patio">
-                </div>
-                <button id="btnGuardarBloqueo" type="button" class="btn-warning">Aplicar Bloqueo Diario</button>
             </div>
-        </div>
 
-        <div class="monitor-header">
-            <h3>📋 Vehículos en Planta y Reservas de Hoy</h3>
-            <button id="btnRefrescarMonitor" type="button" class="btn-secondary btn-sm">🔄 Refrescar</button>
-        </div>
-        <div id="monitorLista" class="lista-operativa"></div>
+            <div class="acciones-puerta">
+                <button id="btnRegistrarIngreso" type="button" class="btn-ingreso">
+                    ✅ Validar e Ingresar (+1 Ocupado)
+                </button>
+                <button id="btnRegistrarSalidaRapida" type="button" class="btn-salida-rapida">
+                    🚗 Registrar Salida (-1 Ocupado)
+                </button>
+            </div>
+        </section>
+
+        <!-- MONITOR DIARIO DE RESERVAS Y VEHÍCULOS -->
+        <section aria-label="Vehículos en planta y reservas de hoy">
+            <div class="monitor-header">
+                <h3>📋 Vehículos en Planta y Reservas de Hoy</h3>
+                <button id="btnRefrescarMonitor" type="button" class="btn-secondary btn-sm">🔄 Refrescar</button>
+            </div>
+            <div id="monitorLista" class="lista-operativa"></div>
+        </section>
     </div>
 
-    <script src="js/garita.js?v=2"></script>
+    <!-- MODAL: REDUCIR / MODIFICAR CAPACIDAD DISPONIBLE -->
+    <div id="modalBloqueoDia" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="tituloModalBloqueo">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3 id="tituloModalBloqueo">⚙️ Reducir o Modificar Cupos Hoy</h3>
+                <button id="btnCerrarModalBloqueo" type="button" class="btn-close-modal" aria-label="Cerrar">✖</button>
+            </div>
+            <p class="modal-desc">Indica cuántos cupos se restan del aforo mensual programado desde este momento por algún motivo operativo, o pon 0 para liberarlos.</p>
+
+            <div class="form-group">
+                <label for="cupos_bloqueados">Cantidad de cupos a restar del aforo</label>
+                <input type="number" id="cupos_bloqueados" min="0" max="500">
+            </div>
+            <div class="form-group">
+                <label for="motivo_bloqueo">Motivo (evento, mantenimiento, etc.)</label>
+                <input type="text" id="motivo_bloqueo" autocomplete="off">
+            </div>
+
+            <div class="modal-footer">
+                <button id="btnCancelarModalBloqueo" type="button" class="btn-secondary">Cancelar</button>
+                <button id="btnGuardarBloqueo" type="button" class="btn-warning">Guardar Ajuste</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/garita.js?v=6"></script>
 </body>
 </html>
