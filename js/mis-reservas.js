@@ -24,38 +24,45 @@ document.addEventListener('DOMContentLoaded', async () => {
     const tabAnteriores = document.getElementById('tabAnteriores');
 
     try {
-        const res = await fetch(`${API_URL}/reservas/mis-reservas?codigoAlumno=${codigoAlumno}`, {
+        const res = await fetch(`${API_URL}/reservas/mis-reservas?codigoAlumno=${encodeURIComponent(codigoAlumno)}`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
-        if (res.ok) {
-            todasLasReservas = await res.json();
-            renderizar();
-        } else {
+
+        if (!res.ok) {
             container.innerHTML = '<p style="text-align:center;color:#64748b;padding:2rem;">No se pudieron cargar las reservas.</p>';
+            return;
         }
+
+        const data = await res.json();
+        todasLasReservas = Array.isArray(data)
+            ? data
+            : (Array.isArray(data?.reservas) ? data.reservas : []);
+
+        renderizar();
     } catch (e) {
-        container.innerHTML = '<p style="text-align:center;color:red;padding:2rem;">Error al comunicarse con el servidor.</p>';
+        container.innerHTML = '<p style="text-align:center;color:#dc2626;padding:2rem;">Error al comunicarse con el servidor.</p>';
     }
 
-    tabProximas.addEventListener('click', () => {
+    tabProximas?.addEventListener('click', () => {
         tabProximas.classList.add('active');
-        tabAnteriores.classList.remove('active');
+        tabAnteriores?.classList.remove('active');
         vistaActual = 'PROXIMAS';
         renderizar();
     });
 
-    tabAnteriores.addEventListener('click', () => {
+    tabAnteriores?.addEventListener('click', () => {
         tabAnteriores.classList.add('active');
-        tabProximas.classList.remove('active');
+        tabProximas?.classList.remove('active');
         vistaActual = 'ANTERIORES';
         renderizar();
     });
 
     function renderizar() {
-        const hoy = new Date().toISOString().split('T')[0];
+        const hoyLima = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Lima' });
+
         const filtradas = todasLasReservas.filter(r => {
-            const fRes = (r.fecha_reserva || '').split('T')[0];
-            return vistaActual === 'PROXIMAS' ? fRes >= hoy : fRes < hoy;
+            const fRes = String(r.fecha_reserva || '').split('T')[0];
+            return vistaActual === 'PROXIMAS' ? fRes >= hoyLima : fRes < hoyLima;
         });
 
         if (filtradas.length === 0) {
@@ -64,49 +71,56 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         container.innerHTML = filtradas.map(r => {
-            const fecha = (r.fecha_reserva || '').split('T')[0];
-            const hora = (r.hora_llegada_programada || '').substring(0, 5);
-            const slot = r.id_espacio;
-            const estado = r.estado_reserva;
+            const fecha = String(r.fecha_reserva || '').split('T')[0];
+            const hora = String(r.hora_llegada_programada || '').substring(0, 5);
+            const estado = r.estado_reserva || 'PENDIENTE';
 
             let badgeClass = 'badge-pendiente';
-            if (estado === 'COMPLETADA') badgeClass = 'badge-confirmada';
-            if (estado === 'EXPIRADA' || estado === 'CANCELADA') badgeClass = 'badge-expirada';
+            if (estado === 'COMPLETADA' || estado === 'EN_CURSO' || estado === 'FINALIZADA') {
+                badgeClass = 'badge-confirmada';
+            } else if (estado === 'EXPIRADA' || estado === 'CANCELADA') {
+                badgeClass = 'badge-expirada';
+            }
 
             return `
                 <div class="reserva-item">
                     <div>
-                        <strong>${fecha} · ${hora} · Slot ${slot}</strong><br>
+                        <strong>${fecha} · ${hora} · Aforo General</strong><br>
                         <span class="badge-estado ${badgeClass}">${estado}</span>
                     </div>
                     <div>
-                        <button class="btn-qr" onclick="alert('Pase de Acceso\\nSlot: ${slot}\\nFecha: ${fecha}')">Ver QR</button>
-                        ${estado === 'PENDIENTE' ? `<button class="btn-cancel" onclick="cancelar('${fecha}')">Cancelar</button>` : ''}
+                        ${estado === 'PENDIENTE' ? `<button type="button" class="btn-cancel" onclick="cancelarReserva('${fecha}')">Cancelar</button>` : ''}
                     </div>
                 </div>
             `;
         }).join('');
     }
 
-    window.cancelar = async (fecha) => {
+    window.cancelarReserva = async (fecha) => {
         if (!confirm(`¿Deseas cancelar la reserva del ${fecha}?`)) return;
+
         try {
             const res = await fetch(`${API_URL}/reservas/cancelar`, {
                 method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json', 
-                    'Authorization': `Bearer ${token}` 
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
                 },
-                body: JSON.stringify({ codigo_alumno: codigoAlumno, fecha_reserva: fecha })
+                body: JSON.stringify({
+                    codigo_alumno: codigoAlumno,
+                    fecha_reserva: fecha
+                })
             });
+
+            const data = await res.json().catch(() => ({}));
             if (res.ok) {
-                alert("Reserva cancelada con éxito");
+                alert(data.mensaje || 'Reserva cancelada con éxito.');
                 location.reload();
             } else {
-                alert("No se pudo cancelar la reserva.");
+                alert(data.error || 'No se pudo cancelar la reserva.');
             }
         } catch (error) {
-            alert("Error de comunicación con el servidor.");
+            alert('Error de comunicación con el servidor.');
         }
     };
 
