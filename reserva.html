@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PriorityParking - Reserva de Estacionamiento</title>
-    <link rel="stylesheet" href="css/reserva.css">
+    <link rel="stylesheet" href="css/reserva.css?v=3">
 </head>
 <body>
     <div class="top-back">
@@ -19,7 +19,6 @@
 
         <p class="session-line">Estudiante: <span id="displayCodigo" class="user-session-text"></span></p>
 
-        <!-- SOLO 2 INDICADORES PARA EL ESTUDIANTE -->
         <div class="aforo-card">
             <div class="aforo-stats-two">
                 <div class="stat-item">
@@ -84,7 +83,7 @@
             </div>
 
             <div class="modal-details">
-                <p><strong>Sede:</strong> <span id="qr-plaza-id">Lima Centro</span></p>
+                <p><strong>Sede:</strong> <span id="qr-plaza-id">Sede Lima Centro</span></p>
                 <p><strong>Fecha y Hora:</strong> <span id="qr-fecha"></span></p>
                 <p><strong>Estado:</strong> <span id="qr-estado" class="status-badge">PENDIENTE</span></p>
             </div>
@@ -93,7 +92,7 @@
         </div>
     </div>
 
-    <!-- MODAL PROPIO DEL SITIO PARA VER DETALLE Y CANCELAR RESERVA -->
+    <!-- MODAL PARA VER DETALLE Y CANCELAR RESERVA -->
     <div id="modal-cancelar-reserva" class="modal-overlay">
         <div class="modal-content">
             <h3 class="modal-header-danger">Cancelar Reserva</h3>
@@ -113,6 +112,6 @@
         </div>
     </div>
 
-    <script src="js/reserva.js?v=3"></script>
+    <script src="js/reserva.js?v=4"></script>
 </body>
 </html>
